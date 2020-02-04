@@ -1,0 +1,67 @@
+{
+  "name": "gx-account-node",
+  "version": "0.1.0",
+  "description": "Api account service for gx",
+  "scripts": {
+    "start": "node -r esm app/index.js",
+    "dev": "sh ./scripts/devdb.sh & npm start",
+    "test": "nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
+    "lint": "./node_modules/.bin/eslint ./lib/**"
+  },
+  "author": "ferco0",
+  "license": "",
+  "dependencies": {
+    "@brazilian-utils/brazilian-utils": "^1.0.0-rc.4",
+    "@google-cloud/firestore": "^3.4.1",
+    "@univ/express": "file:../../../../../univ/packages/express-adapter",
+    "@univ/fastify": "file:../../../../../univ/packages/fastify-adapter",
+    "@univ/setup": "file:../../../../../univ/packages/setup",
+    "bcrypt": "^3.0.7",
+    "cloud-doc-db": "file:../../../../../firefast",
+    "dotenv": "^8.2.0",
+    "ioredis": "^4.14.1",
+    "jsonwebtoken": "^8.5.1",
+    "nexmo": "^2.6.0",
+    "plivo": "^4.1.8",
+    "schemapack": "^1.4.2",
+    "twilio": "^3.39.3"
+  },
+  "devDependencies": {
+    "@firebase/testing": "^0.16.7",
+    "babel-eslint": "^10.0.3",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "esm": "^3.2.25",
+    "husky": "^4.0.10",
+    "lerna": "^3.20.2",
+    "lint-staged": "^9.5.0",
+    "mocha": "^7.0.0",
+    "nyc": "^15.0.0",
+    "prettier": "^1.19.1",
+    "socket.io-client": "^2.3.0",
+    "supertest": "^4.0.2"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "esm": {
+    "cjs": true,
+    "sourceMap": true
+  },
+  "nyc": {
+    "exclude": [
+      "**/*.test.js",
+      "**/test/*"
+    ]
+  }
+}
