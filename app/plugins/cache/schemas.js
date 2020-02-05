@@ -9,6 +9,7 @@ const boolean = sp.build("boolean");
 export const verificationCode = sp.build({
   code: "string",
   created: "string",
+  cpf: "string",
   confirmed: "boolean"
 });
 

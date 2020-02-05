@@ -23,7 +23,7 @@ export default async function phone(ctx, app) {
   await app.cache.set(
     "verificationCode",
     nbr,
-    { code, created, confirmed: false },
+    { code, created, confirmed: false, cpf: "" },
     60 * 5
   );
 

@@ -20,5 +20,14 @@ export default async function cpfController(ctx, app) {
     };
   }
 
+  const { nbr, cpf } = ctx.body;
+
+  const code = await app.cache.get("verificationCode", nbr);
+
+  await app.cache.set("verificationCode", nbr, {
+    ...code,
+    cpf
+  });
+
   return availableResponse;
 }

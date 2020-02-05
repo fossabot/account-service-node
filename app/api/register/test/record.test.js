@@ -6,6 +6,7 @@ export default () => {
   describe("/record", () => {
     const nbr = randomPhone();
     let code;
+    let cpf;
 
     it("invalid password", async () => {
       await agent()
@@ -14,26 +15,26 @@ export default () => {
         .expect(200);
 
       const { code: cod } = await app.cache.get("verificationCode", nbr);
-      const cpf = randomCPF();
+      cpf = randomCPF();
       code = cod;
 
       await agent()
         .post("/register/code")
         .field("nbr", nbr)
-        .field("code", code)
-        .expect(200, { message: "ok" });
+        .field("code", cod)
+        .expect(200);
 
       await agent()
         .post("/register/cpf")
         .field("nbr", nbr)
-        .field("code", code)
+        .field("code", cod)
         .field("cpf", cpf)
         .expect(200, { message: "available" });
 
       await agent()
         .post("/register/record")
         .field("nbr", nbr)
-        .field("code", code)
+        .field("code", cod)
         .field("cpf", cpf)
         .field("name", "fernando")
         .field("birth", new Date("06/13/1994").toString())
@@ -42,7 +43,7 @@ export default () => {
       await agent()
         .post("/register/record")
         .field("nbr", nbr)
-        .field("code", code)
+        .field("code", cod)
         .field("cpf", cpf)
         .field("name", "fernando")
         .field("pw", "1234")
@@ -51,8 +52,6 @@ export default () => {
     });
 
     it("should be registered", async () => {
-      const cpf = randomCPF();
-
       const { body } = await agent()
         .post("/register/record")
         .field("nbr", nbr)
