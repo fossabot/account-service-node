@@ -32,6 +32,30 @@ export const getToken = async () => {
 
 export const randomPhone = () => `558298870${rand()}`;
 
+// https://pt.stackoverflow.com/questions/244457/gerador-de-cpf-em-javascript
+export const randomCPF = () => {
+  const n1 = aleatorio();
+  const n2 = aleatorio();
+  const n3 = aleatorio();
+  const d1 = dig(n1, n2, n3);
+  return `${n1}${n2}${n3}${d1}${dig(n1, n2, n3, d1)}`;
+};
+
+function dig(n1, n2, n3, n4) {
+  const nums = n1.split("").concat(n2.split(""), n3.split(""));
+
+  let x = 0;
+  if (n4) nums[9] = n4;
+  for (let i = n4 ? 11 : 10, j = 0; i >= 2; i--, j++)
+    x += parseInt(nums[j]) * i;
+  const y = x % 11;
+  return y < 2 ? 0 : 11 - y;
+}
+
+function aleatorio() {
+  return ("" + Math.floor(Math.random() * 999)).padStart(3, "0");
+}
+
 export const errors = {
   422: {
     statusCode: 422,

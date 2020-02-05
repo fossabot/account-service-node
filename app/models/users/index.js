@@ -20,8 +20,7 @@ export default function usersModel(storage, app) {
         userData.ln = name[name.length - 1];
       }
 
-      const { data } = await storage.set(collection, userData);
-      return data;
+      return storage.set(collection, userData);
     },
     async get(id) {
       const query = app.utils.regex.phone.test(id)
@@ -36,6 +35,9 @@ export default function usersModel(storage, app) {
 
       return Array.isArray(result) ? result : [result];
     },
+    query(query) {
+      return storage.get(collection, query);
+    },
     async getById(id) {
       const { data } = await storage.get(collection, id);
       return data;
@@ -46,7 +48,7 @@ export default function usersModel(storage, app) {
       });
       return data;
     },
-    async getByCpf(cpf) {
+    async getByCPF(cpf) {
       const [data] = await storage.get(collection, {
         where: ["cpf", "==", cpf]
       });

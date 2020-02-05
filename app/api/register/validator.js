@@ -1,5 +1,7 @@
 import app from "../../index";
 
+import { isValidCPF } from "@brazilian-utils/brazilian-utils";
+
 export default async function registerRequestValidator(body, fields) {
   if (fields.phone && (!body.nbr || !app.utils.regex.phone.test(body.nbr))) {
     throw app.createError(400, "invalid number");
@@ -17,7 +19,11 @@ export default async function registerRequestValidator(body, fields) {
     }
   }
 
-  if (fields.cpf && !app.utils.isValidCPF(body.cpf)) {
+  if (fields.cpf && !isValidCPF(body.cpf)) {
     throw app.createError(400, "invalid cpf");
+  }
+
+  if (fields.pw && (!body.pw || body.pw.length <= 5)) {
+    throw app.createError(400, "invalid password");
   }
 }

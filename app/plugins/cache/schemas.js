@@ -1,6 +1,10 @@
 import sp from "schemapack";
 
+/**
+ * Standards
+ */
 // const string = sp.build("string");
+const boolean = sp.build("boolean");
 
 export const verificationCode = sp.build({
   code: "string",
@@ -20,3 +24,5 @@ export const token = sp.build({
   uid: "string",
   iat: "varuint"
 });
+
+export const availableCPF = boolean;

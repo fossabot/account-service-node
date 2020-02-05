@@ -1,5 +1,7 @@
 import requestValidator from "./validator";
 
+const availableResponse = { content: { message: "available" } };
+
 export default async function cpfController(ctx, app) {
   await ctx.busboy.finish();
   await requestValidator(ctx.body, {
@@ -8,25 +10,15 @@ export default async function cpfController(ctx, app) {
     cpf: true
   });
 
-  const { cpf } = ctx.body;
-  const user = await app.data.users.get(cpf);
+  const user = await app.models.users.getByCPF(ctx.body.cpf);
 
   if (user) {
     return {
       content: {
-        status: "in-use"
+        message: "in use"
       }
     };
-    /*
-      return {
-        content: {
-          fn: user.fn,
-          status:
-            "cpf already registered, if you owner it and don't make the registry, you can request now an audience to prove the ownership"
-        }
-      };
-      */
   }
 
-  return { content: { status: "no-registry" } };
+  return availableResponse;
 }
