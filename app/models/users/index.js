@@ -5,20 +5,16 @@ const collection = "users";
 
 export default function usersModel(storage, app) {
   return {
-    async create({ name, nbr, cpf, birth, pw }) {
-      name = name.split(" ");
-
+    async create({ username, fn, ln, nbr, cpf, birth, pw }) {
       const userData = {
         cpf,
         nbr,
-        fn: name[0],
+        username,
+        fn,
+        ln,
         birth: new Date(birth),
         pw: await bcrypt.hash(pw, 10)
       };
-
-      if (name.length >= 2) {
-        userData.ln = name[name.length - 1];
-      }
 
       return storage.set(collection, userData);
     },
@@ -43,14 +39,20 @@ export default function usersModel(storage, app) {
       return data;
     },
     async getByPhone(nbr) {
-      const [data] = await storage.get(collection, {
+      const [user = { data: undefined }] = await storage.get(collection, {
         where: ["nbr", "==", nbr]
+      });
+      return user;
+    },
+    async getByCPF(cpf) {
+      const [data = { data: undefined }] = await storage.get(collection, {
+        where: ["cpf", "==", cpf]
       });
       return data;
     },
-    async getByCPF(cpf) {
-      const [data] = await storage.get(collection, {
-        where: ["cpf", "==", cpf]
+    async getByUsername(user) {
+      const [data = { data: undefined }] = await storage.get(collection, {
+        where: ["username", "==", user]
       });
       return data;
     }

@@ -1,18 +1,19 @@
 import requestValidator from "./validator";
 
-const availableResponse = { content: { message: "available" } };
+const availableResponse = { content: { message: "ok" } };
 
 export default async function cpfController(ctx, app) {
   await ctx.busboy.finish();
   await requestValidator(ctx.body, {
     phone: true,
     code: "confirmed",
-    cpf: true
+    cpf: true,
+    birth: true
   });
 
   const user = await app.models.users.getByCPF(ctx.body.cpf);
 
-  if (user) {
+  if (user.data) {
     return {
       content: {
         message: "in use"

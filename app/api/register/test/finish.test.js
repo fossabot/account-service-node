@@ -3,7 +3,7 @@ import app from "../../../index";
 import { agent, errors, randomPhone, randomCPF } from "../../../../test/utils";
 
 export default () => {
-  describe("/record", () => {
+  describe("/finish", () => {
     const nbr = randomPhone();
     let code;
     let cpf;
@@ -11,6 +11,7 @@ export default () => {
     it("invalid password", async () => {
       await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
@@ -20,49 +21,63 @@ export default () => {
 
       await agent()
         .post("/register/code")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .expect(200);
 
       await agent()
         .post("/register/cpf")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
-        .expect(200, { message: "available" });
+        .field("birth", "06/13/1994")
+        .expect(200, { message: "ok" });
 
       await agent()
-        .post("/register/record")
+        .post("/register/finish")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
         .field("name", "fernando")
-        .field("birth", new Date("06/13/1994").toString())
+        .field("birth", "06/13/1994")
         .expect(400, { ...errors[400], message: "invalid password" });
 
       await agent()
-        .post("/register/record")
+        .post("/register/finish")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
         .field("name", "fernando")
         .field("pw", "1234")
-        .field("birth", new Date("06/13/1994").toString())
+        .field("birth", "06/13/1994")
         .expect(400, { ...errors[400], message: "invalid password" });
     });
 
     it("should be registered", async () => {
       const { body } = await agent()
-        .post("/register/record")
+        .post("/register/finish")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", code)
         .field("cpf", cpf)
-        .field("name", "fernando")
+        .field("username", "ferco0")
+        .field("fn", "fernando")
+        .field("ln", "costa")
         .field("pw", "1234567")
-        .field("birth", new Date("06/13/1994").toString())
+        .field("birth", "06/13/1994")
+        .field("terms", "true")
         .expect(200);
 
+      expect(body)
+        .to.be.a("object")
+        .that.have.all.keys(["id", "token"]);
+
       expect(body.id).to.be.a("string");
+      expect(body.token).to.be.a("string");
 
       const data = await app.models.users.getById(body.id);
 

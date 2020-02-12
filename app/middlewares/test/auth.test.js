@@ -3,6 +3,14 @@ import { agent, getToken, errors } from "../../../test/utils";
 import app from "../../index";
 
 export default () => {
+  const accountGetExpect = {
+    fn: "nando",
+    cpf: "76759553072",
+    ncode: "55",
+    nbr: "82988704537",
+    birth: "1994-06-13T03:00:00.000Z"
+  };
+
   describe("authorization", () => {
     it("deny by empty token", async () => {
       await agent()
@@ -49,12 +57,7 @@ export default () => {
       await agent()
         .get("/account")
         .set("authorization", token)
-        .expect(200, {
-          fn: "nando",
-          cpf: "76759553072",
-          nbr: "5582988704537",
-          birth: "1994-06-13T03:00:00.000Z"
-        });
+        .expect(200, accountGetExpect);
     });
 
     it("get token from cache", async () => {
@@ -63,12 +66,7 @@ export default () => {
       await agent()
         .get("/account")
         .set("authorization", token)
-        .expect(200, {
-          fn: "nando",
-          cpf: "76759553072",
-          nbr: "5582988704537",
-          birth: "1994-06-13T03:00:00.000Z"
-        });
+        .expect(200, accountGetExpect);
     });
   });
 };

@@ -6,12 +6,12 @@ export default async function signSession(
 ) {
   await busboy.finish();
 
-  const [user] = await app.models.users.get(body.id);
+  if (!body.nbr || !app.utils.regex.phone.test(body.nbr) || !body.pw)
+    throw app.createError(400, "incomplete fields");
 
-  if (!body.id || !body.pw) throw app.createError(400, "incomplete fields");
-
-  if (!user) {
-    throw app.createError(422, "user not found");
+  const user = await app.models.users.getByPhone(body.nbr);
+  if (!user.data) {
+    return { content: { user: null } };
   }
 
   const pwMatch = await compare(body.pw, user.data.pw);
@@ -28,10 +28,10 @@ export default async function signSession(
 
     const token = await app.jwt.sign({ uid: user.id, sid });
 
-    // app.report("info", "sign-in", session);
     return {
       code: 201,
       content: {
+        id: user.id,
         token
       }
     };

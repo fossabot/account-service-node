@@ -12,14 +12,20 @@ export default () => {
 
       await agent()
         .post("/register/phone")
-        .field("code", "8248741")
+        .field("nbr", "8248741")
+        .expect(400, { ...errors[400], message: "invalid number" });
+
+      await agent()
+        .post("/register/phone")
+        .field("ncode", "1231")
         .expect(400, { ...errors[400], message: "invalid number" });
     });
 
     it("phone should be in use", async () => {
       await agent()
         .post("/register/phone")
-        .field("nbr", "5582988704537")
+        .field("ncode", "55")
+        .field("nbr", "82988704537")
         .expect(200, { message: "in use" });
     });
 
@@ -28,25 +34,28 @@ export default () => {
 
       await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
       const { body } = await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
       expect(body.message).to.be.eq("already requested");
     });
 
-    it("should be created a verification code", async () => {
-      await app.cache.del("verificationCode", "5521982163484");
+    it("should create a verification code", async () => {
+      await app.cache.del("verificationCode", "21982163484");
       const { body } = await agent()
         .post("/register/phone")
-        .field("nbr", "5521982163484")
+        .field("ncode", "55")
+        .field("nbr", "21982163484")
         .expect(200);
 
-      expect(body.message).to.be.eq("created");
+      expect(body.message).to.be.eq("ok");
       expect(body.created).to.be.a("string");
     });
   });

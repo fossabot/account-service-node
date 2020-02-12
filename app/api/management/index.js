@@ -10,9 +10,9 @@ export default function management({ use, get, put }) {
   });
 
   get("/", async ctx => {
-    const { fn, cpf, nbr, birth } = ctx.user;
+    const { fn, cpf, nbr, birth, ncode } = ctx.user;
 
-    return { content: { fn, cpf, nbr, birth: birth.toDate() } };
+    return { content: { fn, cpf, nbr, ncode, birth: birth.toDate() } };
   });
 
   put("/", update);

@@ -9,37 +9,42 @@ export default () => {
     it("error response if empty code", async () => {
       await agent()
         .post("/register/code")
-        .field("nbr", "5582988704537")
+        .field("ncode", "55")
+        .field("nbr", "82988704537")
         .expect(400, invalidCode);
     });
 
     it("error response if empty/no provided code", async () => {
       await agent()
         .post("/register/code")
-        .field("nbr", "5582988704537")
+        .field("ncode", "55")
+        .field("nbr", "82988704537")
         .expect(400, invalidCode);
     });
 
     it("error response if provided a wrong code", async () => {
-      const nbr = "5582988708888";
+      const nbr = "82988708888";
 
       await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
       await agent()
         .post("/register/code")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", "00000")
         .expect(400, invalidCode);
     });
 
     it("success response if provided a right code", async () => {
-      const nbr = "5582988707777";
+      const nbr = "82988707777";
 
       await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
@@ -47,6 +52,7 @@ export default () => {
 
       await agent()
         .post("/register/code")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", code)
         .expect(200, { message: "ok" });

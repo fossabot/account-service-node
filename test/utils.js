@@ -24,13 +24,12 @@ export const getToken = async () => {
   if (global.token) return global.token;
   const { body } = await agent()
     .post("/auth/sign")
-    .field("id", "5582988704537")
-    .field("pw", "123");
-
+    .field("nbr", "82988704537")
+    .field("pw", "123456");
   return (global.token = body.token);
 };
 
-export const randomPhone = () => `558298870${rand()}`;
+export const randomPhone = () => `8298870${rand()}`;
 
 // https://pt.stackoverflow.com/questions/244457/gerador-de-cpf-em-javascript
 export const randomCPF = () => {

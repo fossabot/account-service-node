@@ -4,7 +4,10 @@ import { isValidCPF } from "@brazilian-utils/brazilian-utils";
 export default async function registerRequestValidator(body, fields) {
   let codeData;
 
-  if (fields.phone && (!body.nbr || !app.utils.regex.phone.test(body.nbr))) {
+  if (
+    fields.phone &&
+    (!body.nbr || !body.ncode || !app.utils.regex.phone.test(body.nbr))
+  ) {
     throw app.createError(400, "invalid number");
   }
 
@@ -26,9 +29,40 @@ export default async function registerRequestValidator(body, fields) {
     throw app.createError(400, "invalid cpf");
   }
 
+  if (
+    fields.birth &&
+    (!body.birth || !/[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}/.test(body.birth))
+  ) {
+    throw app.createError(400, "invalid birth");
+  }
+
   if (fields.pw && (!body.pw || body.pw.length <= 5)) {
     throw app.createError(400, "invalid password");
   }
 
-  return codeData;
+  if (fields.username) {
+    if (!body.username || !app.utils.regex.username.test(body.username))
+      throw app.createError(400, "invalid username");
+
+    const user = await app.models.users.getByUsername(body.username);
+
+    if (user.data) {
+      return {
+        response: {
+          content: { message: "in use" }
+        }
+      };
+    }
+  }
+
+  if (fields.name) {
+    if (!body.fn || !app.utils.regex.name.test(body.fn))
+      throw app.createError(400, "invalid name");
+  }
+
+  if (fields.name && (!body.ln || !app.utils.regex.name.test(body.ln))) {
+    throw app.createError(400, "invalid last name");
+  }
+
+  return { codeData };
 }

@@ -35,6 +35,18 @@ const app = new Univ(httpFrameworks[process.env.HTTP_FRAMEWORK], {
   port: process.env.PORT || 3000
 });
 
+app.use(({ setHeaders, method }) => {
+  setHeaders({
+    "Access-Control-Allow-Origin": process.env.ORIGINS || "*",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization"
+  });
+
+  if (method === "OPTIONS") {
+    return { code: 200 };
+  }
+});
+
 app.setErrorTracker((err, { body, ip, ips, headers, params, query }) => {
   if (!(process.env.NODE_ENV === "production" || process.env.DEBUG)) return;
 
