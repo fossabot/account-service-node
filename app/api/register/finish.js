@@ -39,12 +39,33 @@ export default async function record(ctx, app) {
     terms
   });
 
+<<<<<<< HEAD
   app.cache
     .del("verificationCode", nbr)
     .catch(e => console.error("Delete verification register code, err:", e));
 
   return {
     content: { id: user.id, message: "ok" }
+=======
+  const session = {
+    user_id: user.id,
+    created: new Date().toString(),
+    ua: ctx.headers["user-agent"],
+    ip: ctx.ip || ctx.ips[ctx.ips.length - 1]
+  };
+
+  const { id: sid } = await app.models.sessions.create(session);
+  const tokenData = { uid: user.id, sid };
+
+  const token = await app.jwt.sign(tokenData);
+
+  await app.cache.set("sessions", sid, session, 3600 * 60);
+  tokenData.iat = Math.round(Date.now() / 1000);
+  await app.cache.set("token", token, tokenData, 3600 * 15);
+
+  return {
+    content: { id: user.id, token }
+>>>>>>> cf4d6750669803724b616896c4ac64bc1dacdec9
   };
 }
 
