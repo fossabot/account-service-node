@@ -77,11 +77,7 @@ export default () => {
         .that.have.all.keys(["id", "token"]);
 
       expect(body.id).to.be.a("string");
-<<<<<<< HEAD
       expect(body.message).to.be.eq("ok");
-=======
-      expect(body.token).to.be.a("string");
->>>>>>> cf4d6750669803724b616896c4ac64bc1dacdec9
 
       const data = await app.models.users.getById(body.id);
 
