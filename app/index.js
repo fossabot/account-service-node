@@ -6,7 +6,7 @@ import Express from "@univ/express";
 import Redis from "ioredis";
 
 import models from "./models";
-import plugins from "./plugins";
+import plugins from "./lib";
 import api from "./api";
 
 const redis = new Redis({
@@ -35,13 +35,24 @@ const app = new Univ(httpFrameworks[process.env.HTTP_FRAMEWORK], {
   port: process.env.PORT || 3000
 });
 
-app.setErrorTracker(err => {
+app.use(({ setHeaders, method }) => {
+  setHeaders({
+    "Access-Control-Allow-Origin": process.env.ORIGINS || "*",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization"
+  });
+
+  if (method === "OPTIONS") {
+    return { code: 200 };
+  }
+});
+
+app.setErrorTracker((err, { body, ip, ips, headers, params, query }) => {
   if (!(process.env.NODE_ENV === "production" || process.env.DEBUG)) return;
 
-  return "statusCode" in err &&
-    (process.env.NODE_ENV === "production" || process.env.DEBUG)
+  return "statusCode" in err && !err.dangerous
     ? console.log(err)
-    : console.error(err);
+    : console.error(err, "context", { body, ip, ips, headers, params, query });
 });
 
 app.attach("redis", redis);

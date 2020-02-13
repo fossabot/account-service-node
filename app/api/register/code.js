@@ -6,32 +6,18 @@ export default async function code(ctx, app) {
 
   const { nbr, code: sentCode } = ctx.body;
 
-  if (!sentCode) throw app.createError(400, "invalid code", { nbr, sentCode });
-
   const codeData = await app.cache.get("verificationCode", nbr);
 
-  if (!codeData) {
+  if (codeData.code === sentCode) {
+    await app.cache.set("verificationCode", nbr, {
+      ...codeData,
+      confirmed: true
+    });
+
     return {
-      content: {
-        message: "code not found"
-      }
+      content: { message: "ok" }
     };
   }
 
-  if (sentCode !== codeData.code) {
-    return {
-      content: {
-        message: "wrong code"
-      }
-    };
-  }
-
-  await app.cache.set("verificationCode", nbr, {
-    ...codeData,
-    confirmed: true
-  });
-
-  return {
-    content: { message: "ok" }
-  };
+  throw app.createError(400, "invalid code");
 }

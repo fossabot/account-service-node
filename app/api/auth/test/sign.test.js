@@ -7,21 +7,21 @@ export default () => {
     it("incomplete fields", async () => {
       await agent()
         .post("/auth/sign")
-        .field("id", "5582999999999")
+        .field("nbr", "82999999999")
         .expect(400, { ...errors[400], message: "incomplete fields" });
     });
     it("not found", async () => {
       await agent()
         .post("/auth/sign")
-        .field("id", "5582999999999")
+        .field("nbr", "82999999999")
         .field("pw", "123")
-        .expect(422, { ...errors[422], message: "user not found" });
+        .expect(200, { user: null });
     });
 
     it("wrong credentials", async () => {
       await agent()
         .post("/auth/sign")
-        .field("id", "5582988704537")
+        .field("nbr", "82988704537")
         .field("pw", "1234")
         .expect(401, { ...errors[401], message: "wrong credentials" });
     });

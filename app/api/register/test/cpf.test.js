@@ -3,35 +3,20 @@ import { agent, errors, randomPhone } from "../../../../test/utils";
 
 const url = "/register/cpf";
 
-const invalidNumber = { ...errors[400], message: "invalid number" };
+// const invalidNumber = { ...errors[400], message: "invalid number" };
 const invalidCode = { ...errors[400], message: "invalid code" };
+const invalidCPF = { ...errors[400], message: "invalid cpf" };
+const invalidBirth = { ...errors[400], message: "invalid birth" };
 
 export default () => {
   describe("/cpf", () => {
-    it("error response if empty/invalid phone number", async () => {
-      await agent()
-        .post(url)
-        .field("nbr", "")
-        .expect(400, invalidNumber);
-
-      await agent()
-        .post(url)
-        .field("code", "8248741")
-        .expect(400, invalidNumber);
-    });
-
-    it("error response if empty code", async () => {
-      const nbr = randomPhone();
-      await agent()
-        .post(url)
-        .field("nbr", nbr)
-        .expect(400, invalidCode);
-    });
+    const nbr = randomPhone();
+    let code;
 
     it("error response if empty/no provided/unconfirmed code", async () => {
-      const nbr = randomPhone();
       await agent()
         .post(url)
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(400, invalidCode);
 
@@ -40,16 +25,79 @@ export default () => {
        */
       await agent()
         .post("/register/phone")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .expect(200);
 
-      const { code } = await app.cache.get("verificationCode", nbr);
+      const { code: cod } = await app.cache.get("verificationCode", nbr);
+      code = cod;
+      await agent()
+        .post("/register/cpf")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", cod)
+        .expect(400, invalidCode);
+    });
+
+    it("response warn that already registred cpf", async () => {
+      // confirm code of previous test
+      await agent()
+        .post("/register/code")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", code)
+        .expect(200);
 
       await agent()
         .post("/register/cpf")
+        .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", code)
-        .expect(400, invalidCode);
+        .field("cpf", "07226841002")
+        .field("birth", "06/13/1994")
+        .expect(200, { message: "in use" });
+    });
+
+    it("error response if provide a invalid cpf", async () => {
+      await agent()
+        .post("/register/cpf")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", code)
+        .field("cpf", "16546")
+        .expect(400, invalidCPF);
+    });
+
+    it("error response if not provided birth", async () => {
+      await agent()
+        .post("/register/cpf")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", code)
+        .field("cpf", "87888501028")
+        .expect(400, invalidBirth);
+    });
+
+    it("error response if invalid birth", async () => {
+      await agent()
+        .post("/register/cpf")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", code)
+        .field("cpf", "87888501028")
+        .field("birth", ".4579")
+        .expect(400, invalidBirth);
+    });
+
+    it("success response if provide a available cpf", async () => {
+      await agent()
+        .post("/register/cpf")
+        .field("ncode", "55")
+        .field("nbr", nbr)
+        .field("code", code)
+        .field("cpf", "87888501028")
+        .field("birth", "06/13/1994")
+        .expect(200, { message: "ok" });
     });
   });
 };

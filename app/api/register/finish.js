@@ -1,49 +1,54 @@
-export default async function finish(ctx, app) {
-  try {
-    await ctx.busboy.finish();
+import requestValidator from "./validator";
 
-    const { name, cpf, birth, pw } = ctx.body;
-    const user = await app.data.users.get(cpf);
+export default async function record(ctx, app) {
+  await ctx.busboy.finish();
+  const { codeData } = await requestValidator(ctx.body, {
+    phone: true,
+    code: "confirmed",
+    cpf: true,
+    birth: true,
+    name: true,
+    username: true,
+    pw: true,
+    terms: true
+  });
 
-    if (user) {
-      return {
-        content: {
-          fn: user.fn,
-          status:
-            "cpf already registred, if you owner it and don't have make the registry, you can request now an audiencie to prove the ownership"
-        }
-      };
-    }
+  const { username, fn, ln, ncode, nbr, cpf, birth, pw, terms } = ctx.body;
 
-    if (!(await trustCPF(cpf, birth)))
-      return {
-        error: {
-          statusCode: 400,
-          message: "invalid-cpf"
-        }
-      };
-
-    const newUser = await app.models.users.create({ name, cpf, birth, pw });
-
-    return {
-      content: { id: newUser.id }
-    };
-  } catch (e) {
-    app.reporter("error", "register:create", {
-      error: e.message
+  if (codeData.cpf !== cpf) {
+    throw app.createError(400, "invalid cpf", {
+      dangerous: "Registry finish, changed data"
     });
-    console.error(e);
-
-    return {
-      error: {
-        statusCode: 500
-      }
-    };
   }
+
+  if (!(await trustCPF(cpf, birth))) {
+    throw app.createError(400, "invalid cpf", {
+      dangerous: "Probaly auto generated"
+    });
+  }
+
+  const user = await app.models.users.create({
+    ncode,
+    nbr,
+    username,
+    fn,
+    ln,
+    cpf,
+    birth,
+    pw,
+    terms
+  });
+
+  app.cache
+    .del("verificationCode", nbr)
+    .catch(e => console.error("Delete verification register code, err:", e));
+
+  return {
+    content: { id: user.id, message: "ok" }
+  };
 }
 
 async function trustCPF(cpf, birth) {
-  // regex(cpf) &&
   // rf_api(cpf) &&
   // compare rf_response.data.birth === birth
   return true;

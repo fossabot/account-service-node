@@ -1,17 +1,21 @@
 export default async function identifyUser({ busboy, body }, app) {
   await busboy.finish();
 
-  if (!body.id) throw app.createError(400, "incomplete fields");
+  if (!body.nbr || !app.utils.regex.phone.test(body.nbr))
+    throw app.createError(400, "incomplete fields");
 
-  const [user] = await app.models.users.get(body.id);
+  const user = await app.models.users.getByPhone(body.nbr);
 
-  if (!user) {
-    throw app.createError(422, "user not found");
+  if (!user.data) {
+    return { content: { user: null } };
   }
 
   return {
     content: {
-      fn: user.data.fn
+      user: {
+        fn: user.data.fn,
+        picture: user.data.picture
+      }
     }
   };
 }

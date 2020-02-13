@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Api account service for gx",
   "scripts": {
-    "start": "node -r esm app/index.js",
+    "start": "node -r esm ./index.js",
     "dev": "sh ./scripts/devdb.sh & npm start",
-    "test": "nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
+    "test": "nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --retries 3 --ignore './node_modules/**' ./**/index.test.js",
     "lint": "./node_modules/.bin/eslint ./lib/**"
   },
   "author": "ferco0",
@@ -23,6 +23,7 @@
     "jsonwebtoken": "^8.5.1",
     "nexmo": "^2.6.0",
     "plivo": "^4.1.8",
+    "pngquant": "^3.0.0",
     "schemapack": "^1.4.2",
     "twilio": "^3.39.3"
   },
