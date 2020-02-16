@@ -1,9 +1,11 @@
 import identify from "./identify";
-import sign from "./sign";
+import credential from "./credential";
+import code from "./code";
 // const unsign = require("./unsign");
 
 export default function loginSetup({ post }) {
   post("/identify", identify);
-  post("/sign", sign);
+  post("/credential", credential);
+  post("/code", code);
   // endpoint.post("/unsign", unsign);
 }

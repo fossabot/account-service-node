@@ -23,8 +23,8 @@ export const agent = () =>
 export const getToken = async () => {
   if (global.token) return global.token;
   const { body } = await agent()
-    .post("/auth/sign")
-    .field("nbr", "82988704537")
+    .post("/auth/credential")
+    .field("id", "82988704537")
     .field("pw", "123456");
   return (global.token = body.token);
 };
@@ -58,18 +58,22 @@ function aleatorio() {
 export const errors = {
   422: {
     statusCode: 422,
-    error: "Unprocessable Entity"
+    error: "Unprocessable Entity",
+    message: "Unprocessable Entity"
   },
   406: {
     statusCode: 406,
-    error: "Not Acceptable"
+    error: "Not Acceptable",
+    message: "Not Acceptable"
   },
   401: {
     statusCode: 401,
-    error: "Unauthorized"
+    error: "Unauthorized",
+    message: "Unauthorized"
   },
   400: {
     statusCode: 400,
-    error: "Bad Request"
+    error: "Bad Request",
+    message: "Bad Request"
   }
 };

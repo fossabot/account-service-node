@@ -3,28 +3,27 @@ import { decode } from "jsonwebtoken";
 import { agent, getToken, errors } from "../../../../test/utils";
 
 export default () => {
-  describe("/sign", () => {
+  describe("/credential", () => {
     it("incomplete fields", async () => {
       await agent()
-        .post("/auth/sign")
-        .field("nbr", "82999999999")
+        .post("/auth/credential")
+        .field("id", "82999999999")
         .expect(400, {
-          ...errors[400],
-          message: "incomplete or invalid fields"
+          ...errors[400]
         });
     });
     it("not found", async () => {
       await agent()
-        .post("/auth/sign")
-        .field("nbr", "82999999999")
+        .post("/auth/credential")
+        .field("id", "82999999999")
         .field("pw", "123")
         .expect(200, { user: null });
     });
 
     it("wrong credentials", async () => {
       await agent()
-        .post("/auth/sign")
-        .field("nbr", "82988704537")
+        .post("/auth/credential")
+        .field("id", "82988704537")
         .field("pw", "1234")
         .expect(401, { ...errors[401], message: "wrong credentials" });
     });

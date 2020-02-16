@@ -6,14 +6,15 @@ export default () => {
       await agent()
         .post("/auth/identify")
         .field("_", "")
-        .expect(400, { ...errors[400], message: "incomplete fields" });
+        .expect(400, { ...errors[400] });
     });
 
     it("found the user", async () => {
       await agent()
         .post("/auth/identify")
-        .field("nbr", "82988704537")
+        .field("id", "82988704537")
         .expect(200, {
+          next: "credential",
           user: { fn: "nando" }
         });
     });
@@ -21,7 +22,7 @@ export default () => {
     it("not found user", async () => {
       await agent()
         .post("/auth/identify")
-        .field("nbr", "82988444437")
+        .field("id", "82988444437")
         .expect(200, { user: null });
     });
   });

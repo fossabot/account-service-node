@@ -1,21 +1,23 @@
 export default async function identifyUser({ busboy, body }, app) {
   await busboy.finish();
 
-  if (!body.nbr || !app.utils.regex.phone.test(body.nbr))
-    throw app.createError(400, "incomplete fields");
+  if (!body.id || body.id.length > 30) throw app.createError(400);
 
-  const user = await app.models.users.getByPhone(body.nbr);
+  const { data } = await app.models.users.get(body.id);
 
-  if (!user.data) {
+  if (!data) {
     return { content: { user: null } };
   }
 
+  const user = {
+    fn: data.fn,
+    photo: data.photo
+  };
+
   return {
     content: {
-      user: {
-        fn: user.data.fn,
-        photo: user.data.photo
-      }
+      user,
+      next: "credential"
     }
   };
 }

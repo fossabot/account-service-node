@@ -1,7 +1,9 @@
 import identify from "./identify.test";
-import sign from "./sign.test";
+import credential from "./credential.test";
+import code from "./code.test";
 
 describe("authorization", () => {
   identify();
-  sign();
+  credential();
+  code();
 });

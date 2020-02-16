@@ -36,7 +36,7 @@ const storage = new CDDB({
         ncode: "55",
         phones: ["82988873646"],
         cpf: "07226841002",
-        twoFactors: false,
+        twoFactors: "82988873646",
         birth: new Date("12/25/1988")
       }
     ].map(user => storage.set("users", user))
