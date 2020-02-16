@@ -2,8 +2,7 @@ import * as schemas from "./schemas";
 
 export default function cacheApi(redis) {
   function set(namespace, key, content, ex = false) {
-    throwIfNotFoundSchema(namespace);
-    const contentParsed = schemas[namespace].encode(content);
+    const contentParsed = encode(namespace, content);
 
     if (ex !== false)
       return redis.set(`${namespace}:${key}`, contentParsed, "EX", ex);
@@ -12,10 +11,9 @@ export default function cacheApi(redis) {
   }
 
   async function get(namespace, key) {
-    throwIfNotFoundSchema(namespace);
-    const buff = await redis.getBuffer(`${namespace}:${key}`);
+    const data = await redis.getBuffer(`${namespace}:${key}`);
 
-    return buff && schemas[namespace].decode(buff);
+    return data && decode(namespace, data);
   }
 
   function del(namespace, key) {
@@ -25,7 +23,14 @@ export default function cacheApi(redis) {
   return { set, get, del };
 }
 
-export function throwIfNotFoundSchema(namespace) {
-  if (!(namespace in schemas))
-    throw new Error(`Not found schema for namespace "${namespace}"`);
+function encode(namespace, content) {
+  if (!(namespace in schemas)) return JSON.strigify(content);
+
+  return schemas[namespace].encode(content);
+}
+
+function decode(namespace, content) {
+  if (!(namespace in schemas)) return JSON.parse(content);
+
+  return schemas[namespace].decode(content);
 }

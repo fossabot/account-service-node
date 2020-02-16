@@ -1,24 +1,80 @@
-import bcrypt from "bcrypt";
+import app from "../../index";
+import { hash } from "bcrypt";
 import { isValidEmail, isValidCPF } from "@brazilian-utils/brazilian-utils";
 
 const collection = "users";
 
+export default class UsersModel {
+  constructor(storage) {
+    this.storage = storage;
+  }
+
+  async create({ birth, pw, ...data }) {
+    return this.storage.set(collection, {
+      ...data,
+      birth: new Date(birth),
+      pw: await hash(pw, 10)
+    });
+  }
+
+  async set(id, data) {
+    return this.storage.set(collection, id, data);
+  }
+
+  async get(id) {
+    if (app.utils.regex.phone.test(id)) return this.getByPhone(id);
+    if (isValidEmail(id)) return this.getByEmail(id);
+    if (isValidCPF(id)) return this.getByCPF(id);
+
+    return this.getById(id);
+  }
+
+  query(query) {
+    return this.storage.get(collection, query);
+  }
+
+  async getById(id) {
+    const data = await this.query(id);
+    return data;
+  }
+
+  async getByPhone(nbr) {
+    const [user = { data: undefined }] = await this.query({
+      where: ["phones", "array-contains", nbr]
+    });
+    return user;
+  }
+
+  async getByCPF(cpf) {
+    const [data = { data: undefined }] = await this.query({
+      where: ["cpf", "==", cpf]
+    });
+    return data;
+  }
+
+  async getByUsername(user) {
+    const [data = { data: undefined }] = await this.query({
+      where: ["username", "==", user]
+    });
+    return data;
+  }
+}
+/*
 export default function usersModel(storage, app) {
   return {
-    async create({ username, fn, ln, nbr, cpf, birth, pw }) {
-      const userData = {
-        cpf,
-        nbr,
-        username,
-        fn,
-        ln,
+    async create({ birth, pw, ...data }) {
+      return this.storage.set(collection, {
+        ...data,
         birth: new Date(birth),
-        pw: await bcrypt.hash(pw, 10)
-      };
-
-      return storage.set(collection, userData);
+        pw: await hash(pw, 10)
+      });
+    },
+    async set(id, data) {
+      return this.storage.set(collection, id, data);
     },
     async get(id) {
+      if (app.utils.regex.phone.test(id)) return;
+
       const query = app.utils.regex.phone.test(id)
         ? { where: ["nbr", "==", id] }
         : isValidEmail(id)
@@ -27,34 +83,35 @@ export default function usersModel(storage, app) {
         ? { where: ["cpf", "==", id] }
         : id;
 
-      const result = await storage.get(collection, query);
+      const result = await this.storage.get(collection, query);
 
       return Array.isArray(result) ? result : [result];
     },
     query(query) {
-      return storage.get(collection, query);
+      return this.storage.get(collection, query);
     },
     async getById(id) {
-      const { data } = await storage.get(collection, id);
+      const { data } = await this.storage.get(collection, id);
       return data;
     },
     async getByPhone(nbr) {
-      const [user = { data: undefined }] = await storage.get(collection, {
-        where: ["nbr", "==", nbr]
+      const [user = { data: undefined }] = await this.storage.get(collection, {
+        where: ["phones", "array-contains", nbr]
       });
       return user;
     },
     async getByCPF(cpf) {
-      const [data = { data: undefined }] = await storage.get(collection, {
+      const [data = { data: undefined }] = await this.storage.get(collection, {
         where: ["cpf", "==", cpf]
       });
       return data;
     },
     async getByUsername(user) {
-      const [data = { data: undefined }] = await storage.get(collection, {
+      const [data = { data: undefined }] = await this.storage.get(collection, {
         where: ["username", "==", user]
       });
       return data;
     }
   };
 }
+*/

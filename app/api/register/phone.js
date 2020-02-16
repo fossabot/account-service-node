@@ -20,7 +20,9 @@ export default async function phone(ctx, app) {
   if (process.env.NODE_ENV === "production") {
     await app.sms.send(`+${ncode}${nbr}`, message);
   } else {
-    console.log("Code:", code);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Code:", code);
+    }
   }
 
   await app.cache.set(

@@ -4,8 +4,8 @@
   "description": "Api account service for gx",
   "scripts": {
     "start": "node -r esm ./index.js",
-    "dev": "sh ./scripts/devdb.sh & npm start",
-    "test": "nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --retries 3 --ignore './node_modules/**' ./**/index.test.js",
+    "dev": "nodemon -r esm ./index.js",
+    "test": "NODE_ENV=test && nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
     "lint": "./node_modules/.bin/eslint ./lib/**"
   },
   "author": "ferco0",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@brazilian-utils/brazilian-utils": "^1.0.0-rc.4",
     "@google-cloud/firestore": "^3.4.1",
+    "@google-cloud/storage": "^4.3.1",
     "@univ/express": "file:../../../../../univ/packages/express-adapter",
     "@univ/fastify": "file:../../../../../univ/packages/fastify-adapter",
     "@univ/setup": "file:../../../../../univ/packages/setup",
@@ -44,6 +45,7 @@
     "lerna": "^3.20.2",
     "lint-staged": "^9.5.0",
     "mocha": "^7.0.0",
+    "nodemon": "^2.0.2",
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
     "socket.io-client": "^2.3.0",
@@ -64,5 +66,15 @@
       "**/*.test.js",
       "**/test/*"
     ]
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules/**/node_modules"
+    ],
+    "env": {
+      "NODE_ENV": "development",
+      "DEBUG": true,
+      "PORT": 3003
+    }
   }
 }

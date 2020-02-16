@@ -4,11 +4,15 @@ import app from "../../index";
 
 export default () => {
   const accountGetExpect = {
+    access: 1,
     fn: "nando",
+    ln: "costa",
     cpf: "76759553072",
     ncode: "55",
-    nbr: "82988704537",
-    birth: "1994-06-13T03:00:00.000Z"
+    phones: ["82988704537"],
+    birth: "1994-06-13T03:00:00.000Z",
+    twoFactors: false,
+    username: "ferco1"
   };
 
   describe("authorization", () => {

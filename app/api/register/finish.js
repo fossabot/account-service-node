@@ -2,7 +2,7 @@ import requestValidator from "./validator";
 
 export default async function record(ctx, app) {
   await ctx.busboy.finish();
-  const { codeData } = await requestValidator(ctx.body, {
+  const { codeData, response } = await requestValidator(ctx.body, {
     phone: true,
     code: "confirmed",
     cpf: true,
@@ -12,6 +12,8 @@ export default async function record(ctx, app) {
     pw: true,
     terms: true
   });
+
+  if (response) return response;
 
   const { username, fn, ln, ncode, nbr, cpf, birth, pw, terms } = ctx.body;
 
@@ -29,14 +31,16 @@ export default async function record(ctx, app) {
 
   const user = await app.models.users.create({
     ncode,
-    nbr,
+    phones: [nbr],
     username,
     fn,
     ln,
     cpf,
     birth,
     pw,
-    terms
+    terms,
+    access: 1,
+    twoFactors: false
   });
 
   app.cache

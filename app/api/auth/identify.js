@@ -14,7 +14,7 @@ export default async function identifyUser({ busboy, body }, app) {
     content: {
       user: {
         fn: user.data.fn,
-        picture: user.data.picture
+        photo: user.data.photo
       }
     }
   };

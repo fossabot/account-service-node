@@ -74,15 +74,15 @@ export default () => {
 
       expect(body)
         .to.be.a("object")
-        .that.have.all.keys(["id", "token"]);
+        .that.have.all.keys(["id", "message"]);
 
       expect(body.id).to.be.a("string");
       expect(body.message).to.be.eq("ok");
 
-      const data = await app.models.users.getById(body.id);
+      const { data } = await app.models.users.getById(body.id);
 
       expect(data).to.be.a("object");
-      expect(data.nbr).to.be.eq(nbr);
+      expect(data.phones[0]).to.be.eq(nbr);
       expect(data.cpf).to.be.eq(cpf);
     });
   });

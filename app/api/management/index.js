@@ -1,24 +1,57 @@
-import auth from "../../middlewares/auth";
+import createAuthMiddleware from "../../middlewares/auth";
+
+import photo from "./update/photo";
+
 import update from "./update";
-import picture from "./picture";
 
 export default function management({ use, get, put }) {
-  use(auth);
+  use(createAuthMiddleware());
   use(async function catchUserData(ctx, app) {
     const user = await app.models.users.getById(ctx.user_id);
 
-    user.id = ctx.user_id;
-    ctx.attach("user", user);
+    const userObject = {
+      data: user.data,
+      async update(data) {
+        await app.models.users.set(user.id, data);
+        return Object.assign(userObject.data, data);
+      }
+    };
+
+    ctx.attach("user", userObject);
   });
 
   get("/", async ctx => {
-    const { fn, cpf, nbr, birth, ncode } = ctx.user;
+    const {
+      username,
+      access,
+      fn,
+      ln,
+      cpf,
+      phones,
+      birth,
+      ncode,
+      photo,
+      twoFactors
+    } = ctx.user.data;
 
-    return { content: { fn, cpf, nbr, ncode, birth: birth.toDate() } };
+    return {
+      content: {
+        username,
+        fn,
+        ln,
+        cpf,
+        phones,
+        ncode,
+        photo,
+        access,
+        twoFactors,
+        birth: birth.toDate()
+      }
+    };
   });
 
   put("/", update);
+  put("/photo", photo);
 
-  put("/photo", picture);
   // get("/history/:page", history)
 }

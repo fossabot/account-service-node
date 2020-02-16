@@ -8,7 +8,10 @@ export default () => {
       await agent()
         .post("/auth/sign")
         .field("nbr", "82999999999")
-        .expect(400, { ...errors[400], message: "incomplete fields" });
+        .expect(400, {
+          ...errors[400],
+          message: "incomplete or invalid fields"
+        });
     });
     it("not found", async () => {
       await agent()
@@ -35,7 +38,7 @@ export default () => {
 
       expect(decoded)
         .to.be.a("object")
-        .that.have.all.keys(["sid", "uid", "iat"]);
+        .that.have.all.keys(["sid", "uid", "iat", "lvl"]);
     });
   });
 };

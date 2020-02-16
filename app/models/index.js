@@ -1,7 +1,7 @@
 import { CDDB } from "cloud-doc-db";
 import { Firestore } from "@google-cloud/firestore";
 
-import users from "./users";
+import UsersModel from "./users";
 import sessions from "./sessions";
 
 const env = process.env.NODE_ENV;
@@ -23,7 +23,7 @@ export default function makeModels(app) {
   });
 
   return {
-    users: users(storage, app),
+    users: new UsersModel(storage, app),
     sessions: sessions(storage, app)
   };
 }

@@ -2,7 +2,7 @@ import app from "../../index";
 import { isValidCPF } from "@brazilian-utils/brazilian-utils";
 
 export default async function registerRequestValidator(body, fields) {
-  let codeData;
+  const response = {};
 
   if (
     fields.phone &&
@@ -14,7 +14,9 @@ export default async function registerRequestValidator(body, fields) {
   if (fields.code) {
     if (!body.code) throw app.createError(400, "invalid code");
 
-    codeData = await app.cache.get("verificationCode", body.nbr);
+    const codeData = await app.cache.get("verificationCode", body.nbr);
+
+    response.codeData = codeData;
 
     if (
       !codeData ||
@@ -48,6 +50,7 @@ export default async function registerRequestValidator(body, fields) {
 
     if (user.data) {
       return {
+        ...response,
         response: {
           content: { message: "in use" }
         }
@@ -64,5 +67,5 @@ export default async function registerRequestValidator(body, fields) {
     throw app.createError(400, "invalid last name");
   }
 
-  return { codeData };
+  return response;
 }

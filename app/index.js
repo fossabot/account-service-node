@@ -6,7 +6,7 @@ import Express from "@univ/express";
 import Redis from "ioredis";
 
 import models from "./models";
-import plugins from "./lib";
+import lib from "./lib";
 import api from "./api";
 
 const redis = new Redis({
@@ -47,17 +47,17 @@ app.use(({ setHeaders, method }) => {
   }
 });
 
-app.setErrorTracker((err, { body, ip, ips, headers, params, query }) => {
+app.setErrorTracker((err, { ip, ips, headers, params }) => {
   if (!(process.env.NODE_ENV === "production" || process.env.DEBUG)) return;
 
   return "statusCode" in err && !err.dangerous
     ? console.log(err)
-    : console.error(err, "context", { body, ip, ips, headers, params, query });
+    : console.error(err, "context", { ip, ips, headers, params });
 });
 
 app.attach("redis", redis);
 app.attach("models", models);
-plugins(app);
+lib(app);
 api(app);
 
 export default app;

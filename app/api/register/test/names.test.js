@@ -19,6 +19,15 @@ export default () => {
         .expect(400, { ...errors[400], message: "invalid username" });
     });
 
+    it("not available username", async () => {
+      await agent()
+        .post("/register/names")
+        .field("username", "ferco1")
+        .field("fn", "fernando")
+        .field("fn", "costa")
+        .expect(200, { message: "in use" });
+    });
+
     it("invalid name", async () => {
       await agent()
         .post("/register/names")
