@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 export default {
   regex: {
     phone: /^[1-9]{2}[6-9][1-9][0-9]{3}[0-9]{4}$/,
@@ -10,8 +12,26 @@ export default {
       .toString()
       .padStart(5, "0");
 
-    const message = `Código do ${process.env.APP_NAME}:\n${code}`;
+    const message = `Código de verificação do ${process.env.APP_NAME}:\n${code}`;
+    const messageHTML = `
+      <center>
+        <img src="cid:guru-logo250.png" />
+        <h1>Guru</h1>
+        <br />
+        <p>Seu código de verificação:</p>
+        <br />
+        <strong>${code}</strong>
+      </center>
+      <br>
+      <p>Esse email é auto-gerado, não o responda.</p>
+    `;
 
-    return { code, message, created: new Date().toString() };
+    return {
+      id: uuidv4(),
+      code,
+      message,
+      messageHTML,
+      created: new Date().toString()
+    };
   }
 };

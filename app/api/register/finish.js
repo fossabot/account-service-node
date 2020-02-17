@@ -32,6 +32,7 @@ export default async function record(ctx, app) {
   const user = await app.models.users.create({
     ncode,
     phones: [nbr],
+    emails: [],
     username,
     fn,
     ln,
@@ -40,7 +41,7 @@ export default async function record(ctx, app) {
     pw,
     terms,
     access: 1,
-    twoFactors: false
+    authSecondFactor: false
   });
 
   app.cache

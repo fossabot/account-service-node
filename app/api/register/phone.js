@@ -15,7 +15,7 @@ export default async function phone(ctx, app) {
     return { content: { message: "in use" } };
   }
 
-  const { code, message, created } = app.utils.makeVerifyCode();
+  const { id, code, message, created } = app.utils.makeVerifyCode();
 
   if (process.env.NODE_ENV === "production") {
     await app.sms.send(`+${ncode}${nbr}`, message);
@@ -28,7 +28,7 @@ export default async function phone(ctx, app) {
   await app.cache.set(
     "verificationCode",
     nbr,
-    { code, created, confirmed: false, cpf: "" },
+    { id, to: nbr, code, created, confirmed: false, cpf: "" },
     60 * 5
   );
 

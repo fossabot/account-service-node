@@ -22,9 +22,10 @@ const storage = new CDDB({
         username: "ferco1",
         access: 1,
         ncode: "55",
-        phones: ["82988704537"],
+        phones: ["82988704537", "82988797979"],
+        emails: [],
         cpf: "76759553072",
-        twoFactors: false,
+        authSecondFactor: false,
         birth: new Date("06/13/1994")
       },
       {
@@ -35,8 +36,9 @@ const storage = new CDDB({
         access: 1,
         ncode: "55",
         phones: ["82988873646"],
+        emails: [],
         cpf: "07226841002",
-        twoFactors: "82988873646",
+        authSecondFactor: "82988873646",
         birth: new Date("12/25/1988")
       }
     ].map(user => storage.set("users", user))

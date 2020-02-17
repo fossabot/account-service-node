@@ -19,11 +19,15 @@ export default async function credential(
     throw app.createError(401, "wrong credentials");
   }
 
-  if (data.twoFactors !== false) {
-    const { code, message, created } = app.utils.makeVerifyCode();
+  if (data.authSecondFactor !== false) {
+    const { id, code, message, created } = app.utils.makeVerifyCode();
 
     if (process.env.NODE_ENV === "production") {
-      await app.sms.send(`+${data.ncode}${data.twoFactors}`, message);
+      /*
+      if(isValidEmail(data.authSecondFactor))
+        await app.email.send("auth", data.authSecondFactor, message, messageHTML);
+      */
+      await app.sms.send(`+${data.ncode}${data.authSecondFactor}`, message);
     } else {
       if (process.env.NODE_ENV === "development") {
         console.log("Code:", code);
@@ -32,13 +36,14 @@ export default async function credential(
 
     await app.cache.set(
       "verificationCode",
-      data.twoFactors,
-      { code, created, confirmed: false, cpf: "" },
+      id,
+      { id, to: body.id, code, created, confirmed: false, cpf: "" },
       60 * 5
     );
 
     return {
       content: {
+        id,
         next: "code"
       }
     };

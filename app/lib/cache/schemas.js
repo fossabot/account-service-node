@@ -3,10 +3,11 @@ import sp from "schemapack";
 /**
  * Standards
  */
-// const string = sp.build("string");
 const boolean = sp.build("boolean");
 
 export const verificationCode = sp.build({
+  id: "string",
+  to: "string",
   code: "string",
   created: "string",
   cpf: "string",

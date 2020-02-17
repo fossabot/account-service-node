@@ -31,7 +31,7 @@ export default function management({ use, get, put }) {
       birth,
       ncode,
       photo,
-      twoFactors
+      authSecondFactor
     } = ctx.user.data;
 
     return {
@@ -44,7 +44,7 @@ export default function management({ use, get, put }) {
         ncode,
         photo,
         access,
-        twoFactors,
+        authSecondFactor,
         birth: birth.toDate()
       }
     };
