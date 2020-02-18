@@ -1,16 +1,15 @@
 export default async function code({ ip, ips, headers, body, busboy }, app) {
   await busboy.finish();
 
-  const { ref, code } = body;
+  const { id, code } = body;
 
-  if (!ref || !code || code.length !== 5) throw app.createError(400);
+  if (!id || !code || code.length !== 5) throw app.createError(400);
 
-  const codeData = await app.cache.get("verificationCode", ref);
+  const codeData = await app.cache.get("verificationCode", id);
 
-  if (!codeData) throw app.createError(406);
-  if (codeData.code !== code) throw app.createError(400);
+  if (!codeData || codeData.code !== code) throw app.createError(406);
 
-  const { id: uid, data } = await app.models.users.get(codeData.to);
+  const { id: uid, data } = await app.models.users.get(id);
 
   const session = {
     user_id: uid,
@@ -29,7 +28,7 @@ export default async function code({ ip, ips, headers, body, busboy }, app) {
   });
 
   app.cache
-    .del("verificationCode", ref)
+    .del("verificationCode", id)
     .catch(e => console.error("Delete verification register code, err:", e));
 
   return {

@@ -26,8 +26,7 @@
     "plivo": "^4.1.8",
     "pngquant": "^3.0.0",
     "schemapack": "^1.4.2",
-    "twilio": "^3.39.3",
-    "uuid": "^3.4.0"
+    "twilio": "^3.39.3"
   },
   "devDependencies": {
     "@firebase/testing": "^0.16.7",

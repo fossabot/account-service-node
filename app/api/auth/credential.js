@@ -20,7 +20,7 @@ export default async function credential(
   }
 
   if (data.authSecondFactor !== false) {
-    const { id, code, message, created } = app.utils.makeVerifyCode();
+    const { code, message, created } = app.utils.makeVerifyCode();
 
     if (process.env.NODE_ENV === "production") {
       /*
@@ -36,14 +36,13 @@ export default async function credential(
 
     await app.cache.set(
       "verificationCode",
-      id,
-      { id, to: body.id, code, created, confirmed: false, cpf: "" },
+      body.id,
+      { code, created, confirmed: false, cpf: "" },
       60 * 5
     );
 
     return {
       content: {
-        id,
         next: "code"
       }
     };

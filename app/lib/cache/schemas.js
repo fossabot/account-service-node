@@ -6,8 +6,6 @@ import sp from "schemapack";
 const boolean = sp.build("boolean");
 
 export const verificationCode = sp.build({
-  id: "string",
-  to: "string",
   code: "string",
   created: "string",
   cpf: "string",

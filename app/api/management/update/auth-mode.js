@@ -1,6 +1,8 @@
 import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 
-export default async function updateAuthMode({ body, user }, app) {
+export default async function updateAuthMode({ busboy, body, user }, app) {
+  await busboy.finish();
+
   const { authSecondFactor: value } = body;
 
   const isPhone = app.utils.regex.phone.test(value);

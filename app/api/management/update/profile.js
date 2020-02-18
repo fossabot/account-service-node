@@ -1,4 +1,6 @@
 export default async function updateProfile({ busboy, body, user }, app) {
+  await busboy.finish();
+
   const { fn, ln } = body;
 
   if (

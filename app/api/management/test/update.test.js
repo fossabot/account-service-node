@@ -21,16 +21,14 @@ export default () => {
       const token = await getToken();
 
       await agent()
-        .put("/account")
+        .put("/account/profile")
         .set("authorization", token)
-        .field("action", "profile")
         .field("fn", "_fernando")
         .expect(400);
 
       await agent()
-        .put("/account")
+        .put("/account/profile")
         .set("authorization", token)
-        .field("action", "profile")
         .field("ln", "fernando0")
         .expect(400);
     });
@@ -39,9 +37,8 @@ export default () => {
       const token = await getToken();
 
       await agent()
-        .put("/account")
+        .put("/account/profile")
         .set("authorization", token)
-        .field("action", "profile")
         .field("fn", "fernando")
         .field("ln", "antonio")
         .expect(200, { message: "ok" });
@@ -56,28 +53,16 @@ export default () => {
         });
 
       await agent()
-        .put("/account")
+        .put("/account/profile")
         .set("authorization", token)
-        .field("action", "profile")
         .field("fn", "nando")
         .expect(200, { message: "ok" });
 
       await agent()
-        .put("/account")
+        .put("/account/profile")
         .set("authorization", token)
-        .field("action", "profile")
         .field("ln", "costa")
         .expect(200, { message: "ok" });
-
-      /* back to original
-      await agent()
-        .put("/account")
-        .set("authorization", token)
-        .field("action", "profile")
-        .field("fn", "nando")
-        .field("ln", "costa")
-        .expect(200, { message: "ok" });
-        */
     });
   });
 
@@ -86,9 +71,8 @@ export default () => {
       const token = await getToken();
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "000000")
         .field("want", "123456")
         .expect(406);
@@ -97,33 +81,29 @@ export default () => {
       const token = await getToken();
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "123456")
         .field("want", "")
         .expect(400);
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "")
         .field("want", "123456")
         .expect(400);
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "123")
         .field("want", "")
         .expect(400);
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "123465")
         .field("want", "123")
         .expect(400);
@@ -133,9 +113,8 @@ export default () => {
       const token = await getToken();
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "123456")
         .field("want", "654321")
         .expect(200, { message: "ok" });
@@ -145,9 +124,8 @@ export default () => {
       expect(await compare("654321", user.data.pw)).to.be.eq(true);
 
       await agent()
-        .put("/account")
+        .put("/account/password")
         .set("authorization", token)
-        .field("action", "password")
         .field("current", "654321")
         .field("want", "123456")
         .expect(200, { message: "ok" });

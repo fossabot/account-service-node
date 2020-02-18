@@ -1,6 +1,8 @@
 import { compare, hash } from "bcrypt";
 
 export default async function updatePassword({ busboy, body, user }, app) {
+  await busboy.finish();
+
   const { current, want } = body;
 
   if (!current || !want || current.length <= 5 || want.length <= 5) {

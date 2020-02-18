@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 export default {
   regex: {
     phone: /^[1-9]{2}[6-9][1-9][0-9]{3}[0-9]{4}$/,
@@ -27,7 +25,6 @@ export default {
     `;
 
     return {
-      id: uuidv4(),
       code,
       message,
       messageHTML,

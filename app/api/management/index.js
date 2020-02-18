@@ -1,56 +1,25 @@
+// middlewares
 import createAuthMiddleware from "../../middlewares/auth";
+import userMiddleware from "./user-middleware";
 
+// catch data
+import getAction from "./get";
+
+// update
+import profile from "./update/profile";
+import password from "./update/password";
+import authMode from "./update/auth-mode";
 import photo from "./update/photo";
-
-import update from "./update";
 
 export default function management({ use, get, put }) {
   use(createAuthMiddleware());
-  use(async function catchUserData(ctx, app) {
-    const user = await app.models.users.getById(ctx.user_id);
+  use(userMiddleware);
 
-    const userObject = {
-      data: user.data,
-      async update(data) {
-        await app.models.users.set(user.id, data);
-        return Object.assign(userObject.data, data);
-      }
-    };
+  get("/", getAction);
 
-    ctx.attach("user", userObject);
-  });
-
-  get("/", async ctx => {
-    const {
-      username,
-      access,
-      fn,
-      ln,
-      cpf,
-      phones,
-      birth,
-      ncode,
-      photo,
-      authSecondFactor
-    } = ctx.user.data;
-
-    return {
-      content: {
-        username,
-        fn,
-        ln,
-        cpf,
-        phones,
-        ncode,
-        photo,
-        access,
-        authSecondFactor,
-        birth: birth.toDate()
-      }
-    };
-  });
-
-  put("/", update);
+  put("/profile", profile);
+  put("/password", password);
+  put("/auth", authMode);
   put("/photo", photo);
 
   // get("/history/:page", history)
