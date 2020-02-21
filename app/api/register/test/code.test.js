@@ -36,7 +36,7 @@ export default () => {
         .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", "00000")
-        .expect(400, invalidCode);
+        .expect(406);
     });
 
     it("success response if provided a right code", async () => {
@@ -48,7 +48,7 @@ export default () => {
         .field("nbr", nbr)
         .expect(200);
 
-      const { code } = await app.cache.get("verificationCode", nbr);
+      const { code } = await app.cache.get("verificationCode", `+55${nbr}`);
 
       await agent()
         .post("/register/code")
@@ -57,7 +57,10 @@ export default () => {
         .field("code", code)
         .expect(200, { message: "ok" });
 
-      const { confirmed } = await app.cache.get("verificationCode", nbr);
+      const { confirmed } = await app.cache.get(
+        "verificationCode",
+        `+55${nbr}`
+      );
 
       expect(confirmed).to.be.eq(true);
     });

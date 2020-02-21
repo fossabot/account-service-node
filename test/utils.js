@@ -26,6 +26,7 @@ export const getToken = async () => {
     .post("/auth/credential")
     .field("id", "82988704537")
     .field("pw", "123456");
+  console.log(body);
   return (global.token = body.token);
 };
 

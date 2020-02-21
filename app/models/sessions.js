@@ -1,12 +1,14 @@
 const collection = "sessions";
 
 export default function sessionsModel(storage) {
-  function create(session) {
+  function set(session) {
     return storage.set(collection, session);
   }
 
-  function get(id) {
-    return storage.get(collection, id);
+  async function get(docId) {
+    const { id, data } = await storage.get(collection, docId);
+
+    return data ? { id, ...data } : {};
   }
 
   function del(id) {
@@ -14,7 +16,7 @@ export default function sessionsModel(storage) {
   }
 
   return {
-    create,
+    set,
     get,
     del
   };

@@ -12,17 +12,14 @@ export const verificationCode = sp.build({
   confirmed: "boolean"
 });
 
-export const sessions = sp.build({
-  user_id: "string",
+export const session = sp.build({
+  id: "string",
+  uid: "string",
   created: "string",
   ua: "string",
-  ip: "string"
+  ip: "string",
+  active: "boolean"
 });
 
-export const token = sp.build({
-  sid: "string",
-  uid: "string",
-  iat: "varuint"
-});
-
+export const token = boolean;
 export const availableCPF = boolean;

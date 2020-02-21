@@ -1,8 +1,17 @@
 import app from "../../index";
-import { isValidCPF } from "@brazilian-utils/brazilian-utils";
+import { isValidEmail, isValidCPF } from "@brazilian-utils/brazilian-utils";
 
 export default async function registerRequestValidator(body, fields) {
   const response = {};
+
+  if (
+    fields.id &&
+    ((!body.email && !body.nbr) ||
+      (body.email && !isValidEmail(body.email)) ||
+      (body.nbr && (!body.ncode || !app.utils.regex.phone.test(body.nbr))))
+  ) {
+    throw app.createError(400, "invalid identification");
+  }
 
   if (
     fields.phone &&
@@ -14,17 +23,14 @@ export default async function registerRequestValidator(body, fields) {
   if (fields.code) {
     if (!body.code) throw app.createError(400, "invalid code");
 
-    const codeData = await app.cache.get("verificationCode", body.nbr);
-
-    response.codeData = codeData;
-
     if (
-      !codeData ||
-      (fields.code === "confirmed" &&
-        (!codeData.confirmed || codeData.code !== body.code))
-    ) {
-      throw app.createError(400, "invalid code");
-    }
+      !(await app.verification.check(
+        `+${body.ncode}${body.nbr}`,
+        body.code,
+        fields.code === "confirmed"
+      ))
+    )
+      throw app.createError(406, "invalid code");
   }
 
   if (fields.cpf && !isValidCPF(body.cpf)) {

@@ -1,6 +1,6 @@
 // middlewares
 import createAuthMiddleware from "../../middlewares/auth";
-import userMiddleware from "./user-middleware";
+import userMiddleware from "../../middlewares/user";
 
 // catch data
 import getAction from "./get";

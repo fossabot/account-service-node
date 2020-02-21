@@ -1,11 +1,15 @@
 import * as schemas from "./schemas";
 
+const lifetimes = {
+  session: process.env.SESSION_CACHE_LIFETIME || 3600 * 60,
+  token: process.env.TOKEN_CACHE_LIFETIME || 3600 * 15
+};
+
 export default function cacheApi(redis) {
-  function set(namespace, key, content, ex = false) {
+  function set(namespace, key, content, ex = lifetimes[namespace]) {
     const contentParsed = encode(namespace, content);
 
-    if (ex !== false)
-      return redis.set(`${namespace}:${key}`, contentParsed, "EX", ex);
+    if (ex) return redis.set(`${namespace}:${key}`, contentParsed, "EX", ex);
 
     return redis.set(`${namespace}:${key}`, contentParsed);
   }
@@ -20,11 +24,17 @@ export default function cacheApi(redis) {
     return redis.del(`${namespace}:${key}`);
   }
 
-  return { set, get, del };
+  async function update(namespace, key, data) {
+    const curr = (await get(namespace, key)) || {};
+
+    await set(namespace, key, { ...curr, ...data });
+  }
+
+  return { set, get, update, del };
 }
 
 function encode(namespace, content) {
-  if (!(namespace in schemas)) return JSON.strigify(content);
+  if (!(namespace in schemas)) return JSON.stringify(content);
 
   return schemas[namespace].encode(content);
 }

@@ -1,8 +1,6 @@
 import requestValidator from "./validator";
 
-const availableResponse = { content: { message: "ok" } };
-
-export default async function cpfController(ctx, app) {
+export default async function cpf(ctx, app) {
   await ctx.busboy.finish();
   await requestValidator(ctx.body, {
     phone: true,
@@ -21,14 +19,9 @@ export default async function cpfController(ctx, app) {
     };
   }
 
-  const { nbr, cpf } = ctx.body;
+  const { nbr, cpf, ncode } = ctx.body;
 
-  const code = await app.cache.get("verificationCode", nbr);
+  await app.verification.update(`+${ncode}${nbr}`, { cpf });
 
-  await app.cache.set("verificationCode", nbr, {
-    ...code,
-    cpf
-  });
-
-  return availableResponse;
+  return { content: { message: "ok" } };
 }

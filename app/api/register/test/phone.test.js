@@ -32,7 +32,9 @@ export default () => {
     it("already requested code", async () => {
       const nbr = randomPhone();
 
-      await agent()
+      const {
+        body: { created }
+      } = await agent()
         .post("/register/phone")
         .field("ncode", "55")
         .field("nbr", nbr)
@@ -44,7 +46,7 @@ export default () => {
         .field("nbr", nbr)
         .expect(200);
 
-      expect(body.message).to.be.eq("already requested");
+      expect(body.created).to.be.eq(created);
     });
 
     it("should create a verification code", async () => {

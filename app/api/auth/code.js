@@ -1,35 +1,27 @@
-export default async function code({ ip, ips, headers, body, busboy }, app) {
+export default async function code(ctx, app) {
+  const { busboy, body } = ctx;
   await busboy.finish();
 
   const { id, code } = body;
 
   if (!id || !code || code.length !== 5) throw app.createError(400);
 
-  const codeData = await app.cache.get("verificationCode", id);
+  let key = id;
 
-  if (!codeData || codeData.code !== code) throw app.createError(406);
+  if (app.utils.regex.phone.test(id)) {
+    const { data } = await app.models.users.getByPhone(id);
+    if (data) key = `+${data.ncode}${id}`;
+  }
 
-  const { id: uid, data } = await app.models.users.get(id);
+  if (!(await app.verification.confirm(key, code))) throw app.createError(406);
 
-  const session = {
-    user_id: uid,
-    created: new Date().toString(),
-    ua: headers["user-agent"],
-    ip: ip || ips[ips.length - 1],
-    lvl: data.access
-  };
+  const { token } = await app.sessions.create(id, ctx);
 
-  const { id: sid } = await app.models.sessions.create(session);
-
-  const token = await app.jwt.sign({
-    uid,
-    sid,
-    lvl: data.access
-  });
-
-  app.cache
-    .del("verificationCode", id)
-    .catch(e => console.error("Delete verification register code, err:", e));
+  app.verification
+    .remove(key)
+    .catch(e =>
+      console.error("Delete verification authentication code, err:", e)
+    );
 
   return {
     content: { message: "ok", token }

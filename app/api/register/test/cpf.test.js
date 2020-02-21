@@ -29,14 +29,17 @@ export default () => {
         .field("nbr", nbr)
         .expect(200);
 
-      const { code: cod } = await app.cache.get("verificationCode", nbr);
+      const { code: cod } = await app.cache.get(
+        "verificationCode",
+        `+55${nbr}`
+      );
       code = cod;
       await agent()
         .post("/register/cpf")
         .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
-        .expect(400, invalidCode);
+        .expect(406);
     });
 
     it("response warn that already registred cpf", async () => {

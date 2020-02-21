@@ -15,7 +15,10 @@ export default () => {
         .field("nbr", nbr)
         .expect(200);
 
-      const { code: cod } = await app.cache.get("verificationCode", nbr);
+      const { code: cod } = await app.cache.get(
+        "verificationCode",
+        `+55${nbr}`
+      );
       cpf = randomCPF();
       code = cod;
 
@@ -41,7 +44,8 @@ export default () => {
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
-        .field("name", "fernando")
+        .field("fn", "fernando")
+        .field("ln", "antonio")
         .field("birth", "06/13/1994")
         .expect(400, { ...errors[400], message: "invalid password" });
 

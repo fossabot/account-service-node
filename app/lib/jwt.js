@@ -18,5 +18,6 @@ export default {
       {
         algorithm: "RS256"
       }
-    )
+    ),
+  decode: jwt.decode
 };

@@ -6,41 +6,47 @@ export default function createAuthMiddleware({ accessGroups } = {}) {
 
     if (!token) throw app.createError(400, "token must be provided");
 
-    let decoded = await app.cache.get("token", token);
+    const tokenData = app.jwt.decode(token);
 
-    if (!decoded) {
+    if (!tokenData) throw app.createError(400, "invalid token");
+
+    const { uid, sid } = tokenData;
+    const tokenId = `${uid}.${sid}`;
+
+    if (!(await app.cache.get("token", tokenId))) {
       try {
-        decoded = await app.jwt.verify(token);
-      } catch (e) {
-        throw app.createError(400, "invalid token", { origin: e });
+        await app.jwt.verify(token);
+      } catch (origin) {
+        throw app.createError(400, "invalid token", { origin });
       }
     }
 
-    if (accessGroups && accessGroups.indexOf(decoded.lvl) === -1) {
-      throw app.createError(403, "not allowed");
+    const session = await verifySession(app, sid, ua);
+
+    if (accessGroups && accessGroups.indexOf(session.lvl) === -1) {
+      throw app.createError(403);
     }
 
-    const session = await verifySession(app, decoded.sid, ua);
+    await app.cache.set("token", tokenId, true);
 
-    await app.cache.set("sessions", decoded.sid, session, 3600 * 60);
-    await app.cache.set("token", token, decoded, 3600 * 15);
-
-    ctx.attach("user_id", decoded.uid);
+    ctx.attach("session", session);
+    ctx.attach("user_id", uid);
   };
 }
 
 async function verifySession(app, id, ua) {
-  const sessionCache = await app.cache.get("sessions", id);
+  const sessionCache = await app.cache.get("session", id);
 
-  if (sessionCache /* && sessionCache.ua === ua */) {
+  if (sessionCache && sessionCache.active) {
     return sessionCache;
   }
 
   const { data } = await app.models.sessions.get(id);
+  data && (await app.cache.set("session", id, data));
 
-  if (data /* && data.ua === ua */) {
+  if (data && data.active) {
     return data;
   }
 
-  throw app.createError(406, "session not found");
+  throw app.createError(406, "invalid session");
 }

@@ -37,7 +37,7 @@ export default () => {
 
       expect(decoded)
         .to.be.a("object")
-        .that.have.all.keys(["sid", "uid", "iat", "lvl"]);
+        .that.have.all.keys(["sid", "uid", "iat"]);
     });
   });
 };

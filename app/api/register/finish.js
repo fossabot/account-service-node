@@ -2,7 +2,7 @@ import requestValidator from "./validator";
 
 export default async function record(ctx, app) {
   await ctx.busboy.finish();
-  const { codeData, response } = await requestValidator(ctx.body, {
+  const { response } = await requestValidator(ctx.body, {
     phone: true,
     code: "confirmed",
     cpf: true,
@@ -16,6 +16,8 @@ export default async function record(ctx, app) {
   if (response) return response;
 
   const { username, fn, ln, ncode, nbr, cpf, birth, pw, terms } = ctx.body;
+
+  const codeData = await app.verification.get(`+${ncode}${nbr}`);
 
   if (codeData.cpf !== cpf) {
     throw app.createError(400, "invalid cpf", {

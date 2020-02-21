@@ -4,20 +4,12 @@ export default async function code(ctx, app) {
   await ctx.busboy.finish();
   await requestValidator(ctx.body, { phone: true, code: true });
 
-  const { nbr, code: sentCode } = ctx.body;
+  const { nbr, ncode, code } = ctx.body;
 
-  const codeData = await app.cache.get("verificationCode", nbr);
+  if (!(await app.verification.confirm(`+${ncode}${nbr}`, code)))
+    throw app.createError(406);
 
-  if (codeData.code === sentCode) {
-    await app.cache.set("verificationCode", nbr, {
-      ...codeData,
-      confirmed: true
-    });
-
-    return {
-      content: { message: "ok" }
-    };
-  }
-
-  throw app.createError(400, "invalid code");
+  return {
+    content: { message: "ok" }
+  };
 }

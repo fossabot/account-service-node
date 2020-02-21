@@ -45,6 +45,13 @@ export default class UsersModel {
     return user;
   }
 
+  async getByEmail(email) {
+    const [user = { data: undefined }] = await this.query({
+      where: ["emails", "array-contains", email]
+    });
+    return user;
+  }
+
   async getByCPF(cpf) {
     const [data = { data: undefined }] = await this.query({
       where: ["cpf", "==", cpf]

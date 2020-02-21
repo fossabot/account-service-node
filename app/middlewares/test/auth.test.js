@@ -36,7 +36,7 @@ export default () => {
 
       const { sid } = decode(token);
 
-      await app.cache.del("sessions", sid);
+      await app.cache.del("session", sid);
       await app.models.sessions.del(sid);
 
       global.token = false;
@@ -44,11 +44,16 @@ export default () => {
       await agent()
         .get("/account")
         .set("authorization", token)
-        .expect(406, { ...errors[406], message: "session not found" });
+        .expect(406, { ...errors[406], message: "invalid session" });
     });
 
     it("deny by invalid signature", async () => {
       const token = await getToken();
+
+      // remove cache verification
+      const { uid, sid } = decode(token);
+      await app.cache.del("token", `${uid}.${sid}`);
+
       await agent()
         .get("/account")
         .set("authorization", `${token}123`)
