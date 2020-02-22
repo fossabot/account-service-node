@@ -5,7 +5,7 @@ export default function unsign({ use, post }) {
   use(createAuthMiddleware());
 
   post("/", async (ctx, app) => {
-    await app.sessions.remove(ctx.session.id);
+    await app.sessions.remove(ctx.userId, ctx.session.id);
 
     return { content: { message: "ok" } };
   });

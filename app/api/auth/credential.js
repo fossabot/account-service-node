@@ -12,42 +12,47 @@ export default async function credential(ctx, app) {
     return { content: { user: null } };
   }
 
-  const pwMatch = await compare(body.pw, data.pw);
-
-  if (!pwMatch) {
+  if (!(await compare(body.pw, data.pw))) {
     throw app.createError(401, "wrong credentials");
   }
 
   const secondFactor = data.authSecondFactor;
 
-  if (secondFactor !== false) {
-    await app.verification.create(secondFactor, body.renew);
-    const content = { next: "code" };
+  if (!secondFactor) {
+    const { token } = await app.sessions.create(uid, ctx);
 
-    if (isValidEmail(secondFactor) && body.id !== secondFactor) {
-      // mask email@provider.com -> ema**@provider.com
-      const parts = secondFactor.split("@");
-      content.target = `${parts[0].slice(0, 3).padEnd(parts[0].length, "*")}@${
-        parts[1]
-      }`;
-    } else {
-      // last 4 celphone digits
-      content.target = secondFactor.slice(
-        secondFactor.length - 4,
-        secondFactor.length
-      );
-    }
-
-    return { content };
+    return {
+      code: 201,
+      content: {
+        id: uid,
+        token
+      }
+    };
   }
 
-  const { token } = await app.sessions.create(uid, ctx);
+  const { send } = await app.verification.create(
+    body.id,
+    secondFactor,
+    body.renew
+  );
+  const isEmail = isValidEmail(secondFactor);
+  const content = { next: "code" };
 
-  return {
-    code: 201,
-    content: {
-      id: uid,
-      token
-    }
-  };
+  send && (await send(isEmail ? "email" : "phone"));
+
+  if (isEmail && body.id !== secondFactor) {
+    // mask email -> ema**@provider.com
+    const parts = secondFactor.split("@");
+    content.target = `${parts[0].slice(0, 3).padEnd(parts[0].length, "*")}@${
+      parts[1]
+    }`;
+  } else {
+    // last 4 celphone digits
+    content.target = `** *****-${secondFactor.slice(
+      secondFactor.length - 4,
+      secondFactor.length
+    )}`;
+  }
+
+  return { content };
 }

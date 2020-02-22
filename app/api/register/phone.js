@@ -2,7 +2,8 @@ import requestValidator from "./validator";
 
 export default async function phone(ctx, app) {
   await ctx.busboy.finish();
-  await requestValidator(ctx.body, { phone: true /* id: true */ });
+  await requestValidator(ctx.body, { phone: true });
+  // const { idBy } = await requestValidator(ctx.body, { phone: true /* id: true */ });
 
   const { nbr, ncode, renew } = ctx.body;
   // const { email, nbr, ncode,renew } = ctx.body;
@@ -14,7 +15,13 @@ export default async function phone(ctx, app) {
     return { content: { message: "in use" } };
   }
 
-  const { created } = await app.verification.create(`+${ncode}${nbr}`, renew);
+  const { send, created } = await app.verification.create(
+    `+${ncode}${nbr}`,
+    renew
+  );
+
+  send && (await send("phone"));
+
   // const { created } = await app.verification.create(id, renew);
 
   return {

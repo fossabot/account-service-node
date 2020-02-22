@@ -13,6 +13,8 @@ export default async function registerRequestValidator(body, fields) {
     throw app.createError(400, "invalid identification");
   }
 
+  response.idBy = body.email ? "email" : "phone";
+
   if (
     fields.phone &&
     (!body.nbr || !body.ncode || !app.utils.regex.phone.test(body.nbr))

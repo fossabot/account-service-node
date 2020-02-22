@@ -11,6 +11,7 @@ export default () => {
     cpf: "76759553072",
     ncode: "55",
     phones: ["82988704537", "82988797979"],
+    emails: ["ferco0@live.com"],
     birth: "1994-06-13T03:00:00.000Z",
     authSecondFactor: false,
     username: "ferco1"

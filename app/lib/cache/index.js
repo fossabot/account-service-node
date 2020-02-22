@@ -1,8 +1,8 @@
 import * as schemas from "./schemas";
 
 const lifetimes = {
-  session: process.env.SESSION_CACHE_LIFETIME || 3600 * 60,
-  token: process.env.TOKEN_CACHE_LIFETIME || 3600 * 15
+  session: process.env.SESSION_CACHE_LIFETIME || 3600 * 60, // 1h
+  token: process.env.TOKEN_CACHE_LIFETIME || 3600 * 15 // 15m
 };
 
 export default function cacheApi(redis) {

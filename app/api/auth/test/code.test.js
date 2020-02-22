@@ -42,7 +42,7 @@ export default () => {
         .post("/auth/credential")
         .field("id", "82988873646")
         .field("pw", "123456")
-        .expect(200, { next: "code", target: "3646" });
+        .expect(200, { next: "code", target: "** *****-3646" });
 
       await agent()
         .post("/auth/code")
@@ -52,10 +52,7 @@ export default () => {
     });
 
     it("right code", async () => {
-      const { code } = await app.cache.get(
-        "verificationCode",
-        "+5582988873646"
-      );
+      const { code } = await app.cache.get("verificationCode", "82988873646");
 
       expect(code).to.be.a("string");
 

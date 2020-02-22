@@ -6,6 +6,7 @@ import sessions from "./sessions";
 import sms from "./sms";
 import verification from "./verification";
 import storage from "./storage";
+import email from "./email";
 
 export default function attachLibrary(app) {
   app.attach("utils", utils);
@@ -16,4 +17,5 @@ export default function attachLibrary(app) {
   app.attach("sms", sms);
   app.attach("verification", verification);
   app.attach("storage", storage);
+  app.attach("email", email);
 }

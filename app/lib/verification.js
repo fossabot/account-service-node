@@ -1,15 +1,15 @@
-import { isValidEmail } from "@brazilian-utils/brazilian-utils";
+// import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 
 export default function verification(app) {
-  const { cache, sms } = app;
+  const { cache, email, sms } = app;
 
   function get(id) {
-    return app.cache.get("verificationCode", id);
+    return cache.get("verificationCode", id);
   }
 
-  async function create(to, renew) {
+  async function create(id, to, renew) {
     if (!renew) {
-      const existent = await get(to);
+      const existent = await get(id);
 
       if (existent) {
         return { created: existent.created };
@@ -18,27 +18,36 @@ export default function verification(app) {
 
     const { code, message, messageHTML } = make();
 
-    if (process.env.NODE_ENV === "production") {
-      if (isValidEmail(to)) {
-        await sendEmail(to, messageHTML);
-      } else {
-        await sms.send(to, message);
-      }
-    }
-
-    if (process.env.NODE_ENV === "development") {
-      console.log("Code:", code);
-    }
-
     const created = new Date().toString();
     await cache.set(
       "verificationCode",
-      to,
+      id,
       { to, code, created, confirmed: false, cpf: "" },
       60 * 15
     );
 
-    return { created };
+    return {
+      code,
+      created,
+      send(type) {
+        return app.isProduction
+          ? send(type, to, type === "email" ? messageHTML : message)
+          : console.log("Code:", code);
+      }
+    };
+  }
+
+  async function send(type, to, content) {
+    switch (type) {
+      case "email":
+        return email.send(to, content);
+      case "phone":
+        return sms.send(to, content);
+      default:
+        throw new Error(
+          `Invalid verification send message method, is valid: "email" and "phone"; you provided: ${type}.`
+        );
+    }
   }
 
   function update(id, data) {
@@ -71,8 +80,6 @@ export default function verification(app) {
 
   return { get, create, update, confirm, check, remove };
 }
-
-async function sendEmail(to, content) {}
 
 function make() {
   const code = Math.floor(Math.random() * 99999)

@@ -1,8 +1,8 @@
 const collection = "sessions";
 
 export default function sessionsModel(storage) {
-  function set(session) {
-    return storage.set(collection, session);
+  function set(id, data) {
+    return storage.set(collection, id, data);
   }
 
   async function get(docId) {

@@ -35,6 +35,8 @@ const app = new Univ(httpFrameworks[process.env.HTTP_FRAMEWORK], {
   port: process.env.PORT || 3000
 });
 
+app.attach("isProduction", process.env.NODE_ENV === "production");
+
 app.use(({ setHeaders, method }) => {
   setHeaders({
     "Access-Control-Allow-Origin": process.env.ORIGINS || "*",

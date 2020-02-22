@@ -3,28 +3,27 @@ import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 export default async function updateAuthMode({ busboy, body, user }, app) {
   await busboy.finish();
 
-  let { authSecondFactor: value } = body;
+  const { authSecondFactor: value } = body;
 
-  const isPhone = app.utils.regex.phone.test(value);
+  const phone = app.utils.regex.phoneWithCountryCode.exec(value);
   const isEmail = isValidEmail(value);
 
-  if (value !== "false" && !isPhone && !isEmail) {
+  if (value !== "false" && !phone && !isEmail) {
     throw app.createError(400, "must be an email or mobile phone number");
   }
 
-  if (
-    value !== "false" &&
-    ((isPhone && user.data.phones.indexOf(value) === -1) ||
-      (isEmail && user.data.emails.indexOf(value) === -1))
-  ) {
-    throw app.createError(406);
+  if (value !== "false") {
+    if (
+      phone &&
+      user.data.phones.indexOf(`${phone[2]}${phone[3]}${phone[4]}`) === -1
+    )
+      throw app.createError(406, "not owner of this contact");
+
+    if (isEmail && user.data.emails.indexOf(value) === -1)
+      throw app.createError(406, "not owner of this contact");
   }
 
-  if (isPhone) {
-    value = `+${user.data.ncode}${value}`;
-  }
-
-  await user.update({ authSecondFactor: isPhone || isEmail ? value : false });
+  await user.update({ authSecondFactor: phone || isEmail ? value : false });
 
   return { content: { message: "ok" } };
 }

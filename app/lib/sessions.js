@@ -23,13 +23,12 @@ export default function sessions({ cache, jwt, models: { users, sessions } }) {
     return { token, session };
   }
 
-  async function remove(sid) {
-    const { id, data } = await sessions.get(sid);
+  async function remove(uid, sid) {
     const activeProp = { active: false };
 
-    await sessions.set(id, activeProp);
+    await sessions.set(sid, activeProp);
     await cache.update("session", sid, activeProp);
-    await cache.del("token", `${data.uid}.${sid}`);
+    await cache.del("token", `${uid}.${sid}`);
   }
 
   return { create, remove };

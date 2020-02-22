@@ -23,7 +23,7 @@ const storage = new CDDB({
         access: 1,
         ncode: "55",
         phones: ["82988704537", "82988797979"],
-        emails: [],
+        emails: ["ferco0@live.com"],
         cpf: "76759553072",
         authSecondFactor: false,
         birth: new Date("06/13/1994")

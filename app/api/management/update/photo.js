@@ -1,8 +1,8 @@
 import PngQuant from "pngquant";
 
 export default async function updatePhoto(
-  { user, busboy }, // context
-  { createError, storage, models } // app
+  { user, busboy, userId }, // context
+  { createError, storage } // app
 ) {
   const upload = {};
   const errorHandler = err => {
@@ -13,7 +13,7 @@ export default async function updatePhoto(
     file(field, stream, name, encoding, mimetype) {
       // prevent multiple file handling
       if (upload.fileName) return;
-      upload.fileName = `${user.data.id}.${Date.now()}.png`;
+      upload.fileName = `${userId}.${Date.now()}.png`;
 
       let fileBytes = 0;
       stream.on("error", errorHandler);
