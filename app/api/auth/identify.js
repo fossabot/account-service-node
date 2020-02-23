@@ -1,7 +1,7 @@
 export default async function identifyUser({ busboy, body }, app) {
   await busboy.finish();
 
-  if (!body.id || body.id.length > 30) throw app.createError(400);
+  if (!body.id || body.id.length > 20) throw app.createError(400);
 
   const { data } = await app.models.users.get(body.id);
 

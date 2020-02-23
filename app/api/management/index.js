@@ -10,6 +10,7 @@ import profile from "./update/profile";
 import password from "./update/password";
 import authMode from "./update/auth-mode";
 import photo from "./update/photo";
+import contact from "./update/contact";
 
 export default function management({ use, get, put }) {
   use(createAuthMiddleware());
@@ -21,6 +22,6 @@ export default function management({ use, get, put }) {
   put("/password", password);
   put("/auth", authMode);
   put("/photo", photo);
-
+  put("/contact", contact);
   // get("/history/:page", history)
 }
