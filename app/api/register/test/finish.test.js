@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import faker from "faker";
 import app from "../../../index";
 import { agent, errors, randomPhone, randomCPF } from "../../../../test/utils";
 
@@ -9,11 +10,14 @@ export default () => {
     let cpf;
 
     it("invalid password", async () => {
-      await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(200);
+      expect(
+        (
+          await agent()
+            .post("/register/phone")
+            .field("ncode", "55")
+            .field("nbr", nbr)
+        ).status
+      ).to.be.eq(201);
 
       const { code: cod } = await app.cache.get(
         "verificationCode",
@@ -22,43 +26,58 @@ export default () => {
       cpf = randomCPF();
       code = cod;
 
-      await agent()
-        .post("/register/code")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", cod)
-        .expect(200);
+      expect(
+        (
+          await agent()
+            .post("/register/code")
+            .field("ncode", "55")
+            .field("nbr", nbr)
+            .field("code", cod)
+        ).status
+      ).to.be.eq(200);
 
-      await agent()
-        .post("/register/cpf")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", cod)
-        .field("cpf", cpf)
-        .field("birth", "06/13/1994")
-        .expect(200, { message: "ok" });
+      expect(
+        (
+          await agent()
+            .post("/register/cpf")
+            .field("ncode", "55")
+            .field("nbr", nbr)
+            .field("code", cod)
+            .field("cpf", cpf)
+            .field("birth", "06/13/1994")
+        ).body.message
+      ).to.be.eq("ok");
 
-      await agent()
+      const req1 = await agent()
         .post("/register/finish")
         .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
-        .field("fn", "fernando")
-        .field("ln", "antonio")
+        .field("fn", faker.name.firstName())
+        .field("ln", faker.name.lastName())
+        .field("username", faker.internet.userName())
         .field("birth", "06/13/1994")
         .expect(400, { ...errors[400], message: "invalid password" });
 
-      await agent()
+      expect(req1.status).to.be.eq(400);
+      expect(req1.body.message).to.be.eq("invalid password");
+
+      const req2 = await agent()
         .post("/register/finish")
         .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .field("cpf", cpf)
-        .field("name", "fernando")
+        .field("fn", faker.name.firstName())
+        .field("ln", faker.name.lastName())
+        .field("username", faker.internet.userName())
         .field("pw", "1234")
         .field("birth", "06/13/1994")
         .expect(400, { ...errors[400], message: "invalid password" });
+
+      expect(req2.status).to.be.eq(400);
+      expect(req2.body.message).to.be.eq("invalid password");
     });
 
     it("should be registered", async () => {
@@ -68,13 +87,13 @@ export default () => {
         .field("nbr", nbr)
         .field("code", code)
         .field("cpf", cpf)
-        .field("username", "ferco0")
-        .field("fn", "fernando")
-        .field("ln", "costa")
+        .field("fn", faker.name.firstName())
+        .field("ln", faker.name.lastName())
+        .field("username", faker.internet.userName())
         .field("pw", "1234567")
         .field("birth", "06/13/1994")
         .field("terms", "true")
-        .expect(200);
+        .expect(201);
 
       expect(body)
         .to.be.a("object")

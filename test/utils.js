@@ -1,4 +1,4 @@
-import request from "supertest";
+import stRequest from "supertest";
 import app from "../app";
 
 before(async () => {
@@ -18,7 +18,7 @@ function anyInt(min = 0, max = 9) {
 const rand = () => `${anyInt()}${anyInt()}${anyInt()}${anyInt()}`;
 
 export const agent = () =>
-  request.agent(`http://localhost:${app.server.info.port}`);
+  stRequest.agent(`http://localhost:${app.server.info.port}`);
 
 export const getToken = async () => {
   if (global.token) return global.token;
@@ -26,8 +26,29 @@ export const getToken = async () => {
     .post("/auth/credential")
     .field("id", "82988704537")
     .field("pw", "123456");
-  console.log(body);
   return (global.token = body.token);
+};
+
+export const request = async (
+  method,
+  url,
+  fields = {},
+  { auth = true, headers = {} } = {}
+) => {
+  const token = await getToken();
+  const ag = agent()[method](url);
+
+  for (const header in headers) {
+    ag.set(header, headers[header]);
+  }
+
+  auth && ag.set("authorization", token);
+
+  for (const field in fields) {
+    ag.field(field, fields[field]);
+  }
+
+  return ag;
 };
 
 export const randomPhone = () => `8298870${rand()}`;

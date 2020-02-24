@@ -25,5 +25,5 @@ export default async function updateAuthMode({ busboy, body, user }, app) {
 
   await user.update({ authSecondFactor: phone || isEmail ? value : false });
 
-  return { content: { message: "ok" } };
+  return { code: 201, content: { message: "ok" } };
 }

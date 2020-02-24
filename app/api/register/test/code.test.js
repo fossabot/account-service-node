@@ -25,37 +25,42 @@ export default () => {
     it("error response if provided a wrong code", async () => {
       const nbr = "82988708888";
 
-      await agent()
+      const { status: reqStatus } = await agent()
         .post("/register/phone")
         .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(200);
+        .field("nbr", nbr);
 
-      await agent()
+      expect(reqStatus).to.be.eq(201);
+
+      const { status: checkStatus } = await agent()
         .post("/register/code")
         .field("ncode", "55")
         .field("nbr", nbr)
-        .field("code", "00000")
-        .expect(406);
+        .field("code", "00000");
+
+      expect(checkStatus).to.be.eq(406);
     });
 
     it("success response if provided a right code", async () => {
       const nbr = "82988707777";
 
-      await agent()
+      const { status: reqStatus } = await agent()
         .post("/register/phone")
         .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(200);
+        .field("nbr", nbr);
+
+      expect(reqStatus).to.be.eq(201);
 
       const { code } = await app.cache.get("verificationCode", `+55${nbr}`);
 
-      await agent()
+      const { status: checkStatus, body } = await agent()
         .post("/register/code")
         .field("ncode", "55")
         .field("nbr", nbr)
-        .field("code", code)
-        .expect(200, { message: "ok" });
+        .field("code", code);
+
+      expect(checkStatus).to.be.eq(200);
+      expect(body.message).to.be.eq("ok");
 
       const { confirmed } = await app.cache.get(
         "verificationCode",

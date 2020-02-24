@@ -23,5 +23,5 @@ export default async function updateProfile({ busboy, body, user }, app) {
 
   await user.update(data);
 
-  return { content: { message: "ok" } };
+  return { code: 201, content: { message: "ok" } };
 }

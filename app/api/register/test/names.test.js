@@ -1,25 +1,32 @@
-import { agent, errors } from "../../../../test/utils";
+import { expect } from "chai";
+import { agent } from "../../../../test/utils";
 
 export default () => {
   describe("/names", () => {
     it("error response if invalid username", async () => {
-      await agent()
+      const { status: resCode1, body: body1 } = await agent()
         .post("/register/names")
-        .field("username", "..11564.")
-        .expect(400, { ...errors[400], message: "invalid username" });
+        .field("username", "..11564.");
 
-      await agent()
-        .post("/register/names")
-        .field("username", "a")
-        .expect(400, { ...errors[400], message: "invalid username" });
+      expect(resCode1).to.be.eq(400);
+      expect(body1.message).to.be.eq("invalid username");
 
-      await agent()
+      const { status: resCode2, body: body2 } = await agent()
         .post("/register/names")
-        .field("username", "ab")
-        .expect(400, { ...errors[400], message: "invalid username" });
+        .field("username", "a");
+
+      expect(resCode2).to.be.eq(400);
+      expect(body2.message).to.be.eq("invalid username");
+
+      const { status: resCode3, body: body3 } = await agent()
+        .post("/register/names")
+        .field("username", "ab");
+
+      expect(resCode3).to.be.eq(400);
+      expect(body3.message).to.be.eq("invalid username");
     });
 
-    it("not available username", async () => {
+    it("already registred username", async () => {
       await agent()
         .post("/register/names")
         .field("username", "ferco1")
@@ -29,33 +36,41 @@ export default () => {
     });
 
     it("invalid name", async () => {
-      await agent()
+      const { status: resCode1, body: body1 } = await agent()
         .post("/register/names")
         .field("username", "username")
-        .field("fn", "00")
-        .expect(400, { ...errors[400], message: "invalid name" });
+        .field("fn", "00");
 
-      await agent()
+      expect(resCode1).to.be.eq(400);
+      expect(body1.message).to.be.eq("invalid name");
+
+      const { status: resCode2, body: body2 } = await agent()
         .post("/register/names")
         .field("username", "username")
-        .field("fn", "fo")
-        .expect(400, { ...errors[400], message: "invalid name" });
+        .field("fn", "fo");
+
+      expect(resCode2).to.be.eq(400);
+      expect(body2.message).to.be.eq("invalid name");
     });
 
     it("invalid last name", async () => {
-      await agent()
+      const { status: resCode1, body: body1 } = await agent()
         .post("/register/names")
         .field("username", "username")
         .field("fn", "Vanilla")
-        .field("ln", "0")
-        .expect(400, { ...errors[400], message: "invalid last name" });
+        .field("ln", "0");
 
-      await agent()
+      expect(resCode1).to.be.eq(400);
+      expect(body1.message).to.be.eq("invalid last name");
+
+      const { status: resCode2, body: body2 } = await agent()
         .post("/register/names")
         .field("username", "username")
         .field("fn", "Vanilla")
-        .field("ln", "fo")
-        .expect(400, { ...errors[400], message: "invalid last name" });
+        .field("ln", "fo");
+
+      expect(resCode2).to.be.eq(400);
+      expect(body2.message).to.be.eq("invalid last name");
     });
 
     it("valid names", async () => {

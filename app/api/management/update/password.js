@@ -14,5 +14,5 @@ export default async function updatePassword({ busboy, body, user }, app) {
 
   await user.update({ pw: await hash(want, 10) });
 
-  return { content: { message: "ok" } };
+  return { code: 201, content: { message: "ok" } };
 }

@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import app from "../../../index";
 import { agent, errors, randomPhone } from "../../../../test/utils";
 
@@ -23,35 +24,40 @@ export default () => {
       /**
        * unconfirmed
        */
-      await agent()
+      const { status: reqStatus } = await agent()
         .post("/register/phone")
         .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(200);
+        .field("nbr", nbr);
+
+      expect(reqStatus).to.be.eq(201);
 
       const { code: cod } = await app.cache.get(
         "verificationCode",
         `+55${nbr}`
       );
       code = cod;
-      await agent()
+
+      const { status: checkStatus } = await agent()
         .post("/register/cpf")
         .field("ncode", "55")
         .field("nbr", nbr)
         .field("code", cod)
         .expect(406);
+
+      expect(checkStatus).to.be.eq(406);
     });
 
     it("response warn that already registred cpf", async () => {
       // confirm code of previous test
-      await agent()
+      const { status: reqStatus } = await agent()
         .post("/register/code")
         .field("ncode", "55")
         .field("nbr", nbr)
-        .field("code", code)
-        .expect(200);
+        .field("code", code);
 
-      await agent()
+      expect(reqStatus).to.be.eq(200);
+
+      const { status: checkStatus } = await agent()
         .post("/register/cpf")
         .field("ncode", "55")
         .field("nbr", nbr)
@@ -59,6 +65,8 @@ export default () => {
         .field("cpf", "07226841002")
         .field("birth", "06/13/1994")
         .expect(200, { message: "in use" });
+
+      expect(checkStatus).to.be.eq(200);
     });
 
     it("error response if provide a invalid cpf", async () => {

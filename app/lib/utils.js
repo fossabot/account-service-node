@@ -2,7 +2,8 @@ export default {
   regex: {
     phone: /^[1-9]{2}[6-9][1-9][0-9]{3}[0-9]{4}$/,
     phoneWithCountryCode: /^\+([1-9]{2})([1-9]{2})([6-9][1-9][0-9]{3})([0-9]{4})$/,
-    username: /^[\w\d]{1}[\w\d.]{0,14}?[\w\d]$/,
+    username: /^[\w\d]{1}[\w\d.]{1,14}?[\w\d]$/,
+    // username: /^[a-zA-Z]{1}[\w\d]{1,}[\w\d.]?[\w\d]$/,
     name: /^[A-ZÀ-Úa-zà-ú]{3,15}$/
   },
   makeVerifyCode() {

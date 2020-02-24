@@ -51,6 +51,7 @@ export default async function record(ctx, app) {
     .catch(e => console.error("Delete verification register code, err:", e));
 
   return {
+    code: 201,
     content: { id: user.id, message: "ok" }
   };
 }

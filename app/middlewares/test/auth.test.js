@@ -50,7 +50,6 @@ export default () => {
 
     it("deny by invalid signature", async () => {
       const token = await getToken();
-
       // remove cache verification
       const { uid, sid } = decode(token);
       await app.cache.del("token", `${uid}.${sid}`);

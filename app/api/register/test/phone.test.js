@@ -38,13 +38,13 @@ export default () => {
         .post("/register/phone")
         .field("ncode", "55")
         .field("nbr", nbr)
-        .expect(200);
+        .expect(201);
 
       const { body } = await agent()
         .post("/register/phone")
         .field("ncode", "55")
         .field("nbr", nbr)
-        .expect(200);
+        .expect(201);
 
       expect(body.created).to.be.eq(created);
     });
@@ -55,7 +55,7 @@ export default () => {
         .post("/register/phone")
         .field("ncode", "55")
         .field("nbr", "21982163484")
-        .expect(200);
+        .expect(201);
 
       expect(body.message).to.be.eq("ok");
       expect(body.created).to.be.a("string");

@@ -25,6 +25,7 @@ export default async function phone(ctx, app) {
   // const { created } = await app.verification.create(id, renew);
 
   return {
+    code: 201,
     content: { message: "ok", created }
   };
 }
