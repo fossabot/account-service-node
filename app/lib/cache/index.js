@@ -17,7 +17,7 @@ export default function cacheApi(redis) {
   async function get(namespace, key) {
     const data = await redis.getBuffer(`${namespace}:${key}`);
 
-    return data && decode(namespace, data);
+    if (data) return decode(namespace, data);
   }
 
   function del(namespace, key) {

@@ -56,7 +56,7 @@ export default async function registerRequestValidator(body, fields) {
 
     const user = await app.models.users.getByUsername(body.username);
 
-    if (user.data) {
+    if (user) {
       return {
         ...response,
         response: {

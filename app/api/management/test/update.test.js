@@ -1,6 +1,6 @@
 import app from "../../../index";
 import { expect } from "chai";
-import { request } from "../../../../test/utils";
+import { request, getToken } from "../../../../test/utils";
 import { compare } from "bcrypt";
 
 export default () => {
@@ -48,8 +48,11 @@ export default () => {
       });
 
       expect(
-        (await request("put", "/account/profile", { fn: "nando", ln: "costa" }))
-          .status
+        (await request("put", "/account/profile", { fn: "nando" })).status
+      ).to.be.eq(201);
+
+      expect(
+        (await request("put", "/account/profile", { ln: "costa" })).status
       ).to.be.eq(201);
     });
   });
@@ -118,7 +121,7 @@ export default () => {
 
       const user = await app.models.users.getByPhone("82988704537");
 
-      expect(await compare("654321", user.data.pw)).to.be.eq(true);
+      expect(await compare("654321", user.pw)).to.be.eq(true);
 
       expect(
         (
@@ -136,7 +139,7 @@ export default () => {
    */
   describe("authentication with two factors", () => {
     async function getSecondFactor() {
-      return (await app.models.users.getByPhone("82988704537")).data
+      return (await app.models.users.getByPhone("82988704537"))
         .authSecondFactor;
     }
 
@@ -170,6 +173,183 @@ export default () => {
     it("disable", async () => {
       expect(await setSecondFactor("false")).to.be.eq(201);
       expect(await getSecondFactor()).to.be.eq(false);
+    });
+  });
+
+  /**
+   * Update contacts
+   */
+  describe("contact", () => {
+    const data = {
+      phones: "82988877887",
+      emails: "email@provider.com"
+    };
+    const testTitle = { phones: "number", emails: "email" };
+
+    function testContactAdd(field) {
+      const add = data[field];
+      describe(testTitle[field], () => {
+        it(`contact already in use`, async () => {
+          expect(
+            (
+              await request("put", "/account/contact", {
+                add: "82988873646"
+              })
+            ).body.message
+          ).to.be.eq("in use");
+        });
+
+        it(`should request addition`, async () => {
+          expect(
+            (
+              await request("put", "/account/contact", {
+                add
+              })
+            ).body.message
+          ).to.be.eq("ok");
+        });
+
+        it(`should response addition code wrong`, async () => {
+          expect(
+            (
+              await request("put", "/account/contact", {
+                add,
+                code: ""
+              })
+            ).body.message
+          ).to.be.eq("invalid code");
+
+          expect(
+            (
+              await request("put", "/account/contact", {
+                add,
+                code: "12345"
+              })
+            ).body.message
+          ).to.be.eq("invalid code");
+        });
+
+        it(`should add`, async () => {
+          const { id } = await app.models.users.getByEmail("ferco0@live.com");
+          const { code } = await app.verification.get(`${id}${add}`);
+
+          expect(
+            (
+              await request("put", "/account/contact", {
+                add,
+                code
+              })
+            ).body.message
+          ).to.be.eq("ok");
+
+          const { [field]: contacts } = await app.models.users.getByEmail(
+            "ferco0@live.com"
+          );
+
+          expect(contacts).to.include.members([add]);
+        });
+      });
+    }
+
+    function testContactRemove(field) {
+      const remove = data[field];
+      it(`should remove ${testTitle[field]}`, async () => {
+        expect(
+          (
+            await request("put", "/account/contact", {
+              remove
+            })
+          ).body.message
+        ).to.be.eq("ok");
+
+        const { [field]: contacts } = await app.models.users.getByEmail(
+          "ferco0@live.com"
+        );
+
+        expect(contacts).to.not.have.members([remove]);
+      });
+    }
+
+    it("undefined action", async () => {
+      expect(
+        (
+          await request("put", "/account/contact", {
+            add: ""
+          })
+        ).body.message
+      ).to.be.eq("undefined action");
+
+      expect(
+        (
+          await request("put", "/account/contact", {
+            remove: ""
+          })
+        ).body.message
+      ).to.be.eq("undefined action");
+    });
+
+    describe("add", () => {
+      it("invalid field", async () => {
+        expect(
+          (
+            await request("put", "/account/contact", {
+              add: "578798"
+            })
+          ).body.message
+        ).to.be.eq("invalid fields");
+      });
+
+      testContactAdd("phones");
+      testContactAdd("emails");
+    });
+
+    describe("remove", () => {
+      it("invalid field", async () => {
+        expect(
+          (
+            await request("put", "/account/contact", {
+              remove: "578798"
+            })
+          ).body.message
+        ).to.be.eq("invalid fields");
+      });
+
+      testContactRemove("phones");
+      testContactRemove("emails");
+
+      it("block remove auth second factor", async () => {
+        const auth = await getToken("82988873646");
+
+        expect(
+          (
+            await request(
+              "put",
+              "/account/contact",
+              {
+                remove: "82988873646"
+              },
+              { auth }
+            )
+          ).body.message
+        ).to.be.eq("not allowed");
+      });
+
+      it("block remove unique", async () => {
+        const auth = await getToken("82988873647");
+
+        expect(
+          (
+            await request(
+              "put",
+              "/account/contact",
+              {
+                remove: "82988873647"
+              },
+              { auth }
+            )
+          ).body.message
+        ).to.be.eq("can't remove the only contact method");
+      });
     });
   });
 };

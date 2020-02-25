@@ -7,24 +7,24 @@ export default async function credential(ctx, app) {
 
   if (!body.id || body.id.length > 30 || !body.pw) throw app.createError(400);
 
-  const { id: uid, data } = await app.models.users.get(body.id);
-  if (!data) {
+  const user = await app.models.users.get(body.id);
+  if (!user) {
     return { content: { user: null } };
   }
 
-  if (!(await compare(body.pw, data.pw))) {
+  if (!(await compare(body.pw, user.pw))) {
     throw app.createError(401, "wrong credentials");
   }
 
-  const secondFactor = data.authSecondFactor;
+  const secondFactor = user.authSecondFactor;
 
   if (!secondFactor) {
-    const { token } = await app.sessions.create(uid, ctx);
+    const { token } = await app.sessions.create(user.id, ctx);
 
     return {
       code: 201,
       content: {
-        id: uid,
+        id: user.id,
         token
       }
     };

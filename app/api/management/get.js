@@ -25,7 +25,7 @@ export default function get(ctx) {
       photo,
       access,
       authSecondFactor,
-      birth: birth.toDate()
+      birth
     }
   };
 }

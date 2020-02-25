@@ -40,7 +40,7 @@ export default () => {
       await app.cache.del("session", sid);
       await app.models.sessions.del(sid);
 
-      global.token = false;
+      global.token["82988704537"] = false;
 
       await agent()
         .get("/account")

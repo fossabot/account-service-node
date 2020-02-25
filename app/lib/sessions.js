@@ -1,13 +1,13 @@
 export default function sessions({ cache, jwt, models: { users, sessions } }) {
   async function create(id, ctx) {
-    const { id: uid, data } = await users.get(id);
+    const { id: uid, access: lvl } = await users.get(id);
 
     const session = {
       uid,
+      lvl,
       created: new Date().toString(),
       ua: ctx.headers["user-agent"],
       ip: ctx.ip || ctx.ips[ctx.ips.length - 1],
-      lvl: data.access,
       active: true
     };
 

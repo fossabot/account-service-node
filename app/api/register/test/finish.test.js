@@ -102,7 +102,7 @@ export default () => {
       expect(body.id).to.be.a("string");
       expect(body.message).to.be.eq("ok");
 
-      const { data } = await app.models.users.getById(body.id);
+      const data = await app.models.users.getById(body.id);
 
       expect(data).to.be.a("object");
       expect(data.phones[0]).to.be.eq(nbr);

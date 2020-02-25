@@ -12,7 +12,7 @@ if (env === "production") firestore = new Firestore();
 else {
   firestore = require("@firebase/testing")
     .initializeAdminApp({
-      projectId: "firefast-unit-test"
+      projectId: "gx-account-service-testing"
     })
     .firestore();
 }

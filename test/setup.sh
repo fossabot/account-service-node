@@ -13,7 +13,7 @@ echo "*** Redis host: $REDISHOST ***\n";
 
 firebase serve --only firestore & firestore_emulator_pid=$!
 
-node ./test/seed.js & 
+# node ./test/seed.js & 
 
 echo "*** Press enter to close the services ***\n"
 echo "Firestore emulator PID: $firestore_emulator_pid\n"

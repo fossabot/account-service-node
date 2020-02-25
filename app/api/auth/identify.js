@@ -3,20 +3,18 @@ export default async function identifyUser({ busboy, body }, app) {
 
   if (!body.id || body.id.length > 20) throw app.createError(400);
 
-  const { data } = await app.models.users.get(body.id);
+  const user = await app.models.users.get(body.id);
 
-  if (!data) {
+  if (!user) {
     return { content: { user: null } };
   }
 
-  const user = {
-    fn: data.fn,
-    photo: data.photo
-  };
-
   return {
     content: {
-      user,
+      user: {
+        fn: user.fn,
+        photo: user.photo
+      },
       next: "credential"
     }
   };

@@ -34,36 +34,39 @@ export default class UsersModel {
     return this.storage.get(collection, query);
   }
 
-  async getById(id) {
-    const data = await this.query(id);
-    return data;
+  async queryWhere(where) {
+    const [{ id, data } = {}] = await this.query({
+      where
+    });
+
+    if (data) {
+      data.birth = data.birth.toDate();
+      return { id, ...data };
+    }
   }
 
-  async getByPhone(nbr) {
-    const [user = { data: undefined }] = await this.query({
-      where: ["phones", "array-contains", nbr]
-    });
-    return user;
+  async getById(docId) {
+    const { id, data } = await this.query(docId);
+
+    if (data) {
+      data.birth = data.birth.toDate();
+      return { id, ...data };
+    }
   }
 
-  async getByEmail(email) {
-    const [user = { data: undefined }] = await this.query({
-      where: ["emails", "array-contains", email]
-    });
-    return user;
+  getByPhone(nbr) {
+    return this.queryWhere(["phones", "array-contains", nbr]);
   }
 
-  async getByCPF(cpf) {
-    const [data = { data: undefined }] = await this.query({
-      where: ["cpf", "==", cpf]
-    });
-    return data;
+  getByEmail(email) {
+    return this.queryWhere(["emails", "array-contains", email]);
   }
 
-  async getByUsername(user) {
-    const [data = { data: undefined }] = await this.query({
-      where: ["username", "==", user]
-    });
-    return data;
+  getByCPF(cpf) {
+    return this.queryWhere(["cpf", "==", cpf]);
+  }
+
+  getByUsername(user) {
+    return this.queryWhere(["username", "==", user]);
   }
 }

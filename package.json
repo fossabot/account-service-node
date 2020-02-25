@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "description": "Api account service for gx",
   "scripts": {
-    "start": "node -r esm ./index.js",
-    "dev": "nodemon -r esm ./index.js",
+    "start": "NODE_ENV=production node -r esm ./index.js",
+    "dev": "NODE_ENV=development nodemon -r esm ./index.js",
     "test": "NODE_ENV=test && nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
-    "test:watch": "NODE_ENV=test && nyc mocha --require esm --reporter spec --tiemout 10000 --bail --watch --ignore './node_modules/**' ./**/index.test.js",
+    "test:watch": "NODE_ENV=test && nyc mocha --require esm --tiemout 10000 --watch --ignore './node_modules/**' ./**/index.test.js",
     "lint": "./node_modules/.bin/eslint ./lib/**"
   },
   "author": "ferco0",

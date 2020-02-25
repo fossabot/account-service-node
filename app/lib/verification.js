@@ -32,7 +32,7 @@ export default function verification(app) {
       send(type) {
         return app.isProduction
           ? send(type, to, type === "email" ? messageHTML : message)
-          : console.log("Code:", code);
+          : app.isDev && console.log("Code:", code);
       }
     };
   }

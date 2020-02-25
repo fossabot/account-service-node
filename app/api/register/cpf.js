@@ -11,7 +11,7 @@ export default async function cpf(ctx, app) {
 
   const user = await app.models.users.getByCPF(ctx.body.cpf);
 
-  if (user.data) {
+  if (user) {
     return {
       content: {
         message: "in use"

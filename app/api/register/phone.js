@@ -11,7 +11,7 @@ export default async function phone(ctx, app) {
 
   const user = await app.models.users.getByPhone(nbr);
   // const user = await app.models.users.get(id);
-  if (user.data) {
+  if (user) {
     return { content: { message: "in use" } };
   }
 

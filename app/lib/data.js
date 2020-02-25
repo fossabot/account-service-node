@@ -1,42 +1,63 @@
 export default function buildDataWorker({ models, cache }) {
-  async function get({ namespace, key, fallback }) {
+  async function get(namespace, key, persistent) {
     const fromCache = await cache.get(namespace, key);
 
     if (fromCache) return fromCache;
 
-    if (fallback) {
-      const fromFallback = await fallback();
-      if (fromFallback) {
-        cache.set(namespace, key, fromFallback);
+    if (persistent) {
+      const fromPersistent = await persistent();
+      if (fromPersistent) {
+        cache
+          .set(namespace, key, fromPersistent)
+          .catch(err =>
+            console.error(
+              "Failed to save dataWorker cache, namespace:",
+              namespace,
+              "key:",
+              key,
+              "error",
+              err
+            )
+          );
       }
-      return fromFallback;
+      return fromPersistent;
     }
   }
 
-  function configure({ name, fallback }) {
+  async function set(namespace, key, data, persistent) {
+    // update cache
+    await cache.set(namespace, key, {
+      ...((await cache.get(namespace, key)) || {}),
+      ...data
+    });
+
+    if (persistent) {
+      await persistent();
+    }
+  }
+
+  function configure(name, persistent = {}) {
     struct[name] = {
-      get: key => {
-        get(name, key, fallback.get(key));
-      }
+      get: key => get(name, key, persistent.get && (() => persistent.get(key))),
+      set: (key, data) =>
+        set(
+          name,
+          key,
+          data,
+          persistent.set && (() => persistent.set(key, data))
+        )
     };
   }
-  /**
-   
-  app.data.configure({
-    name: "users",
-    fallback: {
-      get: key => async () => {
-        const [user] = await app.models.users.get(key)
 
-        return user.data || null;
-      }
-    }
-  })
+  const struct = { get, set, configure };
 
-  app.data.users.get("ferco0@live.com") // cache first !-> database
+  configure("verification");
+  configure("users", {
+    get: key => models.users.get(key),
+    set: (key, data) => models.users.set(key, data)
+  });
 
-   */
+  // app.data.users.get("ferco0@live.com"); // cache first !-> database
 
-  const struct = { get, configure };
   return struct;
 }

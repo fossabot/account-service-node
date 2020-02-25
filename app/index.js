@@ -36,6 +36,7 @@ const app = new Univ(httpFrameworks[process.env.HTTP_FRAMEWORK], {
 });
 
 app.attach("isProduction", process.env.NODE_ENV === "production");
+app.attach("isDev", process.env.NODE_ENV === "development");
 
 app.use(({ setHeaders, method }) => {
   setHeaders({

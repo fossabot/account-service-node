@@ -3,7 +3,7 @@ import app from "../../../";
 
 export default async function contact(
   { busboy, body, user, userId },
-  { models, createError, verification, utils }
+  { cache, models, createError, verification, utils }
 ) {
   await busboy.finish();
 
@@ -18,7 +18,8 @@ export default async function contact(
    * Confirm addition
    */
   if (body.code) {
-    if (!(await verification.confirm(`${userId}${body.add}`, body.code)))
+    const cacheKey = `${userId}${body.add}`;
+    if (!(await verification.confirm(cacheKey, body.code)))
       throw createError(406, "invalid code");
 
     const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
@@ -27,6 +28,7 @@ export default async function contact(
     current.push(body.add);
 
     await user.update({ [type]: current });
+    await cache.del(cacheKey);
   }
 
   /**
@@ -38,11 +40,11 @@ export default async function contact(
     const type = utils.regex.phone.test(body.remove) ? "phones" : "emails";
 
     if (allContacts.length === 1)
-      throw createError(406, "can't remove all contact methods");
+      throw createError(406, "can't remove the only contact method");
 
-    if (user.data.secondFactor) {
+    if (user.data.authSecondFactor) {
       const compare = type === "phones" ? `+${user.data.ncode}${item}` : item;
-      if (compare === user.data.secondFactor)
+      if (compare === user.data.authSecondFactor)
         throw createError(406, "not allowed");
     }
 
@@ -58,9 +60,7 @@ export default async function contact(
    * Addition request
    */
   if (body.add && !body.code) {
-    const { data } = await models.users.get(body.add);
-
-    if (data) {
+    if (await models.users.get(body.add)) {
       throw createError(406, "in use");
     }
 
@@ -85,7 +85,8 @@ export default async function contact(
  * Validation
  */
 function validate({ add, remove, code }, app) {
-  if (code && code.length !== 5) throw app.createError(400, "invalid code");
+  if (typeof code !== "undefined" && code.length !== 5)
+    throw app.createError(400, "invalid code");
   if (!add && !remove) throw app.createError(400, "undefined action");
 
   if (add && isInvalid(add)) {

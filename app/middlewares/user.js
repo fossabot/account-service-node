@@ -1,13 +1,16 @@
-export default async function catchUserData(ctx, app) {
-  const query = await app.models.users.getById(ctx.userId);
+export default async function catchUserData(
+  { userId, attach },
+  { data: appData, models: { users } }
+) {
+  const data = await appData.users.get(userId);
 
   const user = {
-    data: query.data,
-    async update(data) {
-      await app.models.users.set(query.id, data);
-      return Object.assign(user.data, data);
+    data,
+    async update(newData) {
+      await appData.users.set(data.id, newData);
+      return Object.assign(user.data, newData);
     }
   };
 
-  ctx.attach("user", user);
+  attach("user", user);
 }
