@@ -1,31 +1,31 @@
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { agent, getToken, errors } from "../../../../test/utils";
+import { agent, getToken } from "../../../../test/utils";
+import { invalidPassword, userNotFound, wrongPassword } from "./errors";
 
 export default () => {
   describe("/credential", () => {
     it("incomplete fields", async () => {
       await agent()
         .post("/auth/credential")
-        .field("id", "82999999999")
-        .expect(400, {
-          ...errors[400]
-        });
+        .field("id", "82988704537")
+        .expect(422, invalidPassword);
     });
+
     it("not found", async () => {
       await agent()
         .post("/auth/credential")
         .field("id", "82999999999")
-        .field("pw", "123")
-        .expect(200, { user: null });
+        .field("pw", "123456")
+        .expect(404, userNotFound);
     });
 
     it("wrong credentials", async () => {
       await agent()
         .post("/auth/credential")
         .field("id", "82988704537")
-        .field("pw", "1234")
-        .expect(401, { ...errors[401], message: "wrong credentials" });
+        .field("pw", "111111")
+        .expect(422, wrongPassword);
     });
 
     it("gen token", async () => {

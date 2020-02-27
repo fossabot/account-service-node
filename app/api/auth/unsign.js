@@ -7,6 +7,6 @@ export default function unsign({ use, post }) {
   post("/", async (ctx, app) => {
     await app.sessions.remove(ctx.userId, ctx.session.id);
 
-    return { code: 201, content: { message: "ok" } };
+    return { code: 200 };
   });
 }

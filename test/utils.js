@@ -75,21 +75,21 @@ export const agent = () =>
 
 export const getToken = async (id = "82988704537") => {
   if (global.token[id]) return global.token[id];
-  const { body } = await agent()
+  const { status, body } = await agent()
     .post("/auth/credential")
     .field("id", id)
     .field("pw", "123456");
   let token;
 
-  if (body.next) {
+  if (status === 200) {
     const { code } = await app.cache.get("verificationCode", id);
     const { body: bodyc } = await agent()
       .post("/auth/code")
       .field("id", id)
       .field("code", code);
-    token = bodyc.token;
+    token = bodyc.content;
   } else {
-    token = body.token;
+    token = body.content;
   }
 
   global.token[id] = token;
@@ -99,8 +99,7 @@ export const getToken = async (id = "82988704537") => {
 export const request = async (
   method,
   url,
-  fields = {},
-  { auth = true, headers = {} } = {}
+  { auth = true, headers = {}, json, fields } = {}
 ) => {
   const token = await getToken();
   const ag = agent()[method](url);
@@ -111,8 +110,15 @@ export const request = async (
 
   auth && ag.set("authorization", auth === true ? token : auth);
 
-  for (const field in fields) {
-    ag.field(field, fields[field]);
+  if (fields) {
+    for (const field in fields) {
+      ag.field(field, fields[field]);
+    }
+  }
+
+  if (json) {
+    ag.set("Content-Type", "application/json");
+    ag.send(json);
   }
 
   return ag;
@@ -154,6 +160,11 @@ export const errors = {
     statusCode: 406,
     error: "Not Acceptable",
     message: "Not Acceptable"
+  },
+  404: {
+    statusCode: 404,
+    error: "Not Found",
+    message: "Not Found"
   },
   401: {
     statusCode: 401,

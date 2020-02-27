@@ -1,32 +1,22 @@
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { agent, errors } from "../../../../test/utils";
+import { agent } from "../../../../test/utils";
 import app from "../../../index";
+import { invalidCode, wrongCode } from "./errors";
 
 export default () => {
   describe("/code", () => {
-    it("incomplete fields", async () => {
-      await agent()
-        .post("/auth/code")
-        .field("id", "82999999999")
-        .expect(400, {
-          ...errors[400]
-        });
-
-      await agent()
-        .post("/auth/code")
-        .field("code", "00")
-        .expect(400, {
-          ...errors[400]
-        });
-    });
-
     it("invalid code", async () => {
       await agent()
         .post("/auth/code")
         .field("id", "82999999999")
-        .field("code", "123")
-        .expect(400);
+        .expect(422, invalidCode);
+
+      await agent()
+        .post("/auth/code")
+        .field("code", "00")
+        .field("id", "82999999999")
+        .expect(422, invalidCode);
     });
 
     it("inexistent code", async () => {
@@ -34,7 +24,7 @@ export default () => {
         .post("/auth/code")
         .field("id", "82999999999")
         .field("code", "12345")
-        .expect(406);
+        .expect(422, wrongCode);
     });
 
     it("wrong code", async () => {
@@ -42,13 +32,13 @@ export default () => {
         .post("/auth/credential")
         .field("id", "82988873646")
         .field("pw", "123456")
-        .expect(200, { next: "code", target: "** *****-3646" });
+        .expect(200, { content: "** *****-3646" });
 
       await agent()
         .post("/auth/code")
         .field("id", "82988873646")
         .field("code", "12345")
-        .expect(406);
+        .expect(422, wrongCode);
     });
 
     it("right code", async () => {
@@ -60,9 +50,9 @@ export default () => {
         .post("/auth/code")
         .field("id", "82988873646")
         .field("code", code)
-        .expect(200);
+        .expect(201);
 
-      const decoded = await decode(body.token);
+      const decoded = await decode(body.content);
 
       expect(decoded)
         .to.be.a("object")

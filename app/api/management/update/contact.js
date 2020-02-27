@@ -2,33 +2,14 @@ import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 import app from "../../../";
 
 export default async function contact(
-  { busboy, body, user, userId },
+  { body, user, userId, session },
   { cache, models, createError, verification, utils }
 ) {
-  await busboy.finish();
-
   /**
    * Fields validation
    */
   if (!validate(body, app)) {
     throw createError(400, "invalid fields");
-  }
-
-  /**
-   * Confirm addition
-   */
-  if (body.code) {
-    const cacheKey = `${userId}${body.add}`;
-    if (!(await verification.confirm(cacheKey, body.code)))
-      throw createError(406, "invalid code");
-
-    const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
-    const current = [...user.data[type]];
-
-    current.push(body.add);
-
-    await user.update({ [type]: current });
-    await cache.del(cacheKey);
   }
 
   /**
@@ -74,6 +55,23 @@ export default async function contact(
     );
 
     send && (await send(type === "phones" ? "phone" : "email"));
+  }
+
+  /**
+   * Confirm addition
+   */
+  if (body.code) {
+    const cacheKey = `${userId}${body.add}`;
+    if (!(await verification.check(cacheKey, body.code)))
+      throw createError(406, "invalid code");
+
+    const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
+    const current = [...user.data[type]];
+
+    current.push(body.add);
+
+    await user.update({ [type]: current });
+    await cache.del(cacheKey);
   }
 
   return {

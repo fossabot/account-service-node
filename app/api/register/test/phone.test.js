@@ -1,63 +1,88 @@
 import { expect } from "chai";
-import app from "../../../index";
-import { agent, errors, randomPhone } from "../../../../test/utils";
+import { request, randomPhone } from "../../../../test/utils";
+import { invalidCountryCode, invalidPhone, phoneInUse } from "./errors";
 
 export default () => {
   describe("/phone", () => {
+    it("error response if invalid country code", async () => {
+      const { status, body } = await request("post", "/register/phone", {
+        json: {
+          ncode: ""
+        }
+      });
+
+      expect(status).to.be.eq(422);
+      expect(body).to.be.deep.eq(invalidCountryCode);
+
+      const { status: st2, body: bd2 } = await request(
+        "post",
+        "/register/phone",
+        {
+          json: {
+            ncode: "as"
+          }
+        }
+      );
+
+      expect(st2).to.be.eq(422);
+      expect(bd2).to.be.deep.eq(invalidCountryCode);
+    });
+
     it("error response if invalid phone number", async () => {
-      await agent()
-        .post("/register/phone")
-        .field("nbr", "")
-        .expect(400, { ...errors[400], message: "invalid number" });
-
-      await agent()
-        .post("/register/phone")
-        .field("nbr", "8248741")
-        .expect(400, { ...errors[400], message: "invalid number" });
-
-      await agent()
-        .post("/register/phone")
-        .field("ncode", "1231")
-        .expect(400, { ...errors[400], message: "invalid number" });
+      const { status, body } = await request("post", "/register/phone", {
+        json: {
+          ncode: "55",
+          phone: "8248741"
+        }
+      });
+      expect(status).to.be.eq(422);
+      expect(body).to.be.deep.eq(invalidPhone);
     });
 
     it("phone should be in use", async () => {
-      await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", "82988704537")
-        .expect(200, { message: "in use" });
+      const { status, body } = await request("post", "/register/phone", {
+        json: {
+          ncode: "55",
+          phone: "82988704537"
+        }
+      });
+      expect(status).to.be.eq(422);
+      expect(body).to.be.deep.eq(phoneInUse);
     });
 
     it("already requested code", async () => {
-      const nbr = randomPhone();
+      const phone = randomPhone();
 
       const {
+        status: st1,
         body: { created }
-      } = await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(201);
+      } = await request("post", "/register/phone", {
+        json: {
+          ncode: "55",
+          phone
+        }
+      });
+      expect(st1).to.be.eq(201);
 
-      const { body } = await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(201);
+      const { status: st2, body } = await request("post", "/register/phone", {
+        json: {
+          ncode: "55",
+          phone
+        }
+      });
 
+      expect(st2).to.be.eq(201);
       expect(body.created).to.be.eq(created);
     });
 
     it("should create a verification code", async () => {
-      await app.cache.del("verificationCode", "21982163484");
-      const { body } = await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", "21982163484")
-        .expect(201);
+      const { body } = await request("post", "/register/phone", {
+        json: {
+          ncode: "55",
+          phone: randomPhone()
+        }
+      });
 
-      expect(body.message).to.be.eq("ok");
       expect(body.created).to.be.a("string");
     });
   });

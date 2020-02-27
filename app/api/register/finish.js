@@ -1,23 +1,11 @@
-import requestValidator from "./validator";
+import * as validations from "./validations";
 
 export default async function record(ctx, app) {
-  await ctx.busboy.finish();
-  const { response } = await requestValidator(ctx.body, {
-    phone: true,
-    code: "confirmed",
-    cpf: true,
-    birth: true,
-    name: true,
-    username: true,
-    pw: true,
-    terms: true
-  });
+  await app.validation(ctx.body, validations);
 
-  if (response) return response;
+  const { username, fn, ln, ncode, phone, cpf, birth, pw, terms } = ctx.body;
 
-  const { username, fn, ln, ncode, nbr, cpf, birth, pw, terms } = ctx.body;
-
-  const codeData = await app.verification.get(`+${ncode}${nbr}`);
+  const codeData = await app.verification.get(`reg:${phone}`);
 
   if (codeData.cpf !== cpf) {
     throw app.createError(400, "invalid cpf", {
@@ -33,7 +21,7 @@ export default async function record(ctx, app) {
 
   const user = await app.models.users.create({
     ncode,
-    phones: [nbr],
+    phones: [phone],
     emails: [],
     username,
     fn,
@@ -47,7 +35,7 @@ export default async function record(ctx, app) {
   });
 
   app.cache
-    .del("verificationCode", nbr)
+    .del("verificationCode", phone)
     .catch(e => console.error("Delete verification register code, err:", e));
 
   return {

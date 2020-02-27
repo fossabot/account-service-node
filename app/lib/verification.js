@@ -54,31 +54,25 @@ export default function verification(app) {
     return cache.update("verificationCode", id, data);
   }
 
-  async function check(id, code, confirmed) {
-    const codeData = await get(id);
-    const state = codeData && codeData.code === code;
-    return confirmed ? state && codeData.confirmed : state;
-  }
+  async function check(id, code) {
+    const data = await get(id);
 
-  async function confirm(id, code) {
-    const codeData = await get(id);
-
-    if (codeData && codeData.code === code) {
-      await update(id, {
-        confirmed: true
-      });
-
-      return true;
+    if (!data || data.code !== code) {
+      return false;
     }
 
-    return false;
+    if (!data.confirmed) {
+      await update(id, { confirmed: true });
+    }
+
+    return true;
   }
 
   function remove(id) {
     return cache.del("verificationCode", id);
   }
 
-  return { get, create, update, confirm, check, remove };
+  return { get, create, update, check, remove };
 }
 
 function make() {

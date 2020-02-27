@@ -1,15 +1,11 @@
-import requestValidator from "./validator";
+import { username, fn, ln } from "./validations";
 
-export default async function names(ctx, app) {
-  await ctx.busboy.finish();
-  const { response } = await requestValidator(ctx.body, {
-    username: true,
-    name: true
+export default async function names({ body }, { validation }) {
+  await validation(body, {
+    username,
+    fn,
+    ln
   });
 
-  return (
-    response || {
-      content: { message: "ok" }
-    }
-  );
+  return { code: 200 };
 }

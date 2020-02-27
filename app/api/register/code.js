@@ -1,15 +1,9 @@
-import requestValidator from "./validator";
+import { code } from "./validations";
 
-export default async function code(ctx, app) {
-  await ctx.busboy.finish();
-  await requestValidator(ctx.body, { phone: true, code: true });
-
-  const { nbr, ncode, code } = ctx.body;
-
-  if (!(await app.verification.confirm(`+${ncode}${nbr}`, code)))
-    throw app.createError(406);
+export default async function codeController({ body }, { validation }) {
+  await validation(body, { code });
 
   return {
-    content: { message: "ok" }
+    code: 200
   };
 }

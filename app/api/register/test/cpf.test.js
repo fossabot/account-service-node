@@ -1,89 +1,96 @@
 import { expect } from "chai";
 import app from "../../../index";
-import { agent, errors, randomPhone } from "../../../../test/utils";
+import { request, agent, randomPhone } from "../../../../test/utils";
+import {
+  wrongCode,
+  invalidCode,
+  inUseCPF,
+  invalidCPF,
+  invalidBirth
+} from "./errors";
 
 const url = "/register/cpf";
 
-// const invalidNumber = { ...errors[400], message: "invalid number" };
-const invalidCode = { ...errors[400], message: "invalid code" };
-const invalidCPF = { ...errors[400], message: "invalid cpf" };
-const invalidBirth = { ...errors[400], message: "invalid birth" };
-
 export default () => {
   describe("/cpf", () => {
-    const nbr = randomPhone();
+    const phone = randomPhone();
+    const json = {
+      ncode: "55",
+      phone
+    };
     let code;
 
-    it("error response if empty/no provided/unconfirmed code", async () => {
-      await agent()
-        .post(url)
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .expect(400, invalidCode);
-
+    it("error response if empty/wrong code", async () => {
       /**
        * unconfirmed
        */
-      const { status: reqStatus } = await agent()
-        .post("/register/phone")
-        .field("ncode", "55")
-        .field("nbr", nbr);
+      const { status: st1 } = await request("post", "/register/phone", {
+        json
+      });
 
-      expect(reqStatus).to.be.eq(201);
+      expect(st1).to.be.eq(201);
 
-      const { code: cod } = await app.cache.get(
-        "verificationCode",
-        `+55${nbr}`
-      );
-      code = cod;
+      const { status: st2, body: body2 } = await request("post", url, {
+        json
+      });
 
-      const { status: checkStatus } = await agent()
-        .post("/register/cpf")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", cod)
-        .expect(406);
+      expect(st2).to.be.eq(422);
+      expect(body2).to.be.deep.eq(invalidCode);
 
-      expect(checkStatus).to.be.eq(406);
+      const { status: st3, body: body3 } = await request("post", url, {
+        json: { ...json, code: "00000" }
+      });
+
+      expect(st3).to.be.eq(422);
+      expect(body3).to.be.deep.eq(wrongCode);
+
+      const { code: cod } = await app.verification.get(`reg:${phone}`);
+      json.code = cod;
     });
 
-    it("response warn that already registred cpf", async () => {
+    it("response that already registred cpf", async () => {
       // confirm code of previous test
-      const { status: reqStatus } = await agent()
-        .post("/register/code")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", code);
+      expect(
+        (
+          await request("post", "/register/code", {
+            json: {
+              ...json,
+              code: (await app.verification.get(`reg:${phone}`)).code
+            }
+          })
+        ).status
+      ).to.be.eq(200);
 
-      expect(reqStatus).to.be.eq(200);
+      const { status, body } = await request("post", url, {
+        json: {
+          ...json,
+          cpf: "76759553072",
+          birth: "06/13/1994"
+        }
+      });
 
-      const { status: checkStatus } = await agent()
-        .post("/register/cpf")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", code)
-        .field("cpf", "07226841002")
-        .field("birth", "06/13/1994")
-        .expect(200, { message: "in use" });
-
-      expect(checkStatus).to.be.eq(200);
+      expect(status).to.be.eq(422);
+      expect(body).to.be.deep.eq(inUseCPF);
     });
 
     it("error response if provide a invalid cpf", async () => {
-      await agent()
-        .post("/register/cpf")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", code)
-        .field("cpf", "16546")
-        .expect(400, invalidCPF);
+      const { status, body } = await request("post", "/register/code", {
+        json: {
+          ...json,
+          cpf: "13546",
+          birth: "06/13/1994"
+        }
+      });
+
+      expect(status).to.be.eq(422);
+      expect(body).to.be.deep.eq(invalidCPF);
     });
 
     it("error response if not provided birth", async () => {
       await agent()
         .post("/register/cpf")
         .field("ncode", "55")
-        .field("nbr", nbr)
+        .field("nbr", phone)
         .field("code", code)
         .field("cpf", "87888501028")
         .expect(400, invalidBirth);
@@ -93,7 +100,7 @@ export default () => {
       await agent()
         .post("/register/cpf")
         .field("ncode", "55")
-        .field("nbr", nbr)
+        .field("nbr", phone)
         .field("code", code)
         .field("cpf", "87888501028")
         .field("birth", ".4579")
@@ -104,7 +111,7 @@ export default () => {
       await agent()
         .post("/register/cpf")
         .field("ncode", "55")
-        .field("nbr", nbr)
+        .field("nbr", phone)
         .field("code", code)
         .field("cpf", "87888501028")
         .field("birth", "06/13/1994")

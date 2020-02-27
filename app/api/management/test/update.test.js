@@ -23,11 +23,19 @@ export default () => {
   describe("profile", () => {
     it("should response with error if invalid data", async () => {
       expect(
-        (await request("put", "/account/profile", { fn: "_fernando" })).status
+        (
+          await request("put", "/account/profile", {
+            json: { fn: "_fernando" }
+          })
+        ).status
       ).to.be.eq(400);
 
       expect(
-        (await request("put", "/account/profile", { ln: "fernando0" })).status
+        (
+          await request("put", "/account/profile", {
+            json: { ln: "fernando0" }
+          })
+        ).status
       ).to.be.eq(400);
     });
 
@@ -35,8 +43,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/profile", {
-            fn: "fernando",
-            ln: "antonio"
+            json: {
+              fn: "fernando",
+              ln: "antonio"
+            }
           })
         ).status
       ).to.be.eq(201);
@@ -48,11 +58,13 @@ export default () => {
       });
 
       expect(
-        (await request("put", "/account/profile", { fn: "nando" })).status
+        (await request("put", "/account/profile", { json: { fn: "nando" } }))
+          .status
       ).to.be.eq(201);
 
       expect(
-        (await request("put", "/account/profile", { ln: "costa" })).status
+        (await request("put", "/account/profile", { json: { ln: "costa" } }))
+          .status
       ).to.be.eq(201);
     });
   });
@@ -65,8 +77,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "000000",
-            want: "123456"
+            json: {
+              current: "000000",
+              want: "123456"
+            }
           })
         ).status
       ).to.be.eq(406);
@@ -75,8 +89,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "123456",
-            want: ""
+            json: {
+              current: "123456",
+              want: ""
+            }
           })
         ).status
       ).to.be.eq(400);
@@ -84,8 +100,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "",
-            want: "123456"
+            json: {
+              current: "",
+              want: "123456"
+            }
           })
         ).status
       ).to.be.eq(400);
@@ -93,8 +111,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "123",
-            want: ""
+            json: {
+              current: "123",
+              want: ""
+            }
           })
         ).status
       ).to.be.eq(400);
@@ -102,8 +122,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "123456",
-            want: "123"
+            json: {
+              current: "123456",
+              want: "123"
+            }
           })
         ).status
       ).to.be.eq(400);
@@ -113,8 +135,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "123456",
-            want: "654321"
+            json: {
+              current: "123456",
+              want: "654321"
+            }
           })
         ).status
       ).to.be.eq(201);
@@ -126,8 +150,10 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
-            current: "654321",
-            want: "123456"
+            json: {
+              current: "654321",
+              want: "123456"
+            }
           })
         ).status
       ).to.be.eq(201);
@@ -146,7 +172,9 @@ export default () => {
     async function setSecondFactor(authSecondFactor) {
       return (
         await request("put", "/account/auth", {
-          authSecondFactor
+          json: {
+            authSecondFactor
+          }
         })
       ).status;
     }
@@ -193,7 +221,9 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
-                add: "82988873646"
+                json: {
+                  add: "82988873646"
+                }
               })
             ).body.message
           ).to.be.eq("in use");
@@ -203,7 +233,9 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
-                add
+                json: {
+                  add
+                }
               })
             ).body.message
           ).to.be.eq("ok");
@@ -213,8 +245,10 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
-                add,
-                code: ""
+                json: {
+                  add,
+                  code: ""
+                }
               })
             ).body.message
           ).to.be.eq("invalid code");
@@ -222,8 +256,10 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
-                add,
-                code: "12345"
+                json: {
+                  add,
+                  code: "12345"
+                }
               })
             ).body.message
           ).to.be.eq("invalid code");
@@ -236,8 +272,10 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
-                add,
-                code
+                json: {
+                  add,
+                  code
+                }
               })
             ).body.message
           ).to.be.eq("ok");
@@ -257,7 +295,9 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
-              remove
+              json: {
+                remove
+              }
             })
           ).body.message
         ).to.be.eq("ok");
@@ -274,7 +314,9 @@ export default () => {
       expect(
         (
           await request("put", "/account/contact", {
-            add: ""
+            json: {
+              add: ""
+            }
           })
         ).body.message
       ).to.be.eq("undefined action");
@@ -282,7 +324,9 @@ export default () => {
       expect(
         (
           await request("put", "/account/contact", {
-            remove: ""
+            json: {
+              remove: ""
+            }
           })
         ).body.message
       ).to.be.eq("undefined action");
@@ -293,7 +337,9 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
-              add: "578798"
+              json: {
+                add: "578798"
+              }
             })
           ).body.message
         ).to.be.eq("invalid fields");
@@ -308,7 +354,9 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
-              remove: "578798"
+              json: {
+                remove: "578798"
+              }
             })
           ).body.message
         ).to.be.eq("invalid fields");
@@ -322,14 +370,10 @@ export default () => {
 
         expect(
           (
-            await request(
-              "put",
-              "/account/contact",
-              {
-                remove: "82988873646"
-              },
-              { auth }
-            )
+            await request("put", "/account/contact", {
+              auth,
+              json: { remove: "82988873646" }
+            })
           ).body.message
         ).to.be.eq("not allowed");
       });
@@ -339,14 +383,10 @@ export default () => {
 
         expect(
           (
-            await request(
-              "put",
-              "/account/contact",
-              {
-                remove: "82988873647"
-              },
-              { auth }
-            )
+            await request("put", "/account/contact", {
+              auth,
+              json: { remove: "82988873647" }
+            })
           ).body.message
         ).to.be.eq("can't remove the only contact method");
       });

@@ -8,7 +8,7 @@ export default function createAuthMiddleware({ accessGroups } = {}) {
 
     const tokenData = app.jwt.decode(token);
 
-    if (!tokenData) throw app.createError(400, "invalid token");
+    if (!tokenData) throw app.createError(422, "invalid token");
 
     const { uid, sid } = tokenData;
     const tokenId = `${uid}.${sid}`;
@@ -17,7 +17,7 @@ export default function createAuthMiddleware({ accessGroups } = {}) {
       try {
         await app.jwt.verify(token);
       } catch (origin) {
-        throw app.createError(400, "invalid token", { origin });
+        throw app.createError(422, "invalid token", { origin });
       }
     }
 
@@ -48,5 +48,5 @@ async function verifySession(app, id, ua) {
     return data;
   }
 
-  throw app.createError(406, "invalid session");
+  throw app.createError(422, "invalid session");
 }

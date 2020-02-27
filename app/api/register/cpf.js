@@ -1,27 +1,16 @@
-import requestValidator from "./validator";
+import { code, cpf, birth } from "./validations";
 
-export default async function cpf(ctx, app) {
-  await ctx.busboy.finish();
-  await requestValidator(ctx.body, {
-    phone: true,
-    code: "confirmed",
-    cpf: true,
-    birth: true
+export default async function cpfController(
+  { body },
+  { validation, verification }
+) {
+  await validation(body, {
+    code,
+    cpf,
+    birth
   });
 
-  const user = await app.models.users.getByCPF(ctx.body.cpf);
+  await verification.update(`reg:${body.phone}`, { cpf: body.cpf });
 
-  if (user) {
-    return {
-      content: {
-        message: "in use"
-      }
-    };
-  }
-
-  const { nbr, cpf, ncode } = ctx.body;
-
-  await app.verification.update(`+${ncode}${nbr}`, { cpf });
-
-  return { content: { message: "ok" } };
+  return { code: 200 };
 }

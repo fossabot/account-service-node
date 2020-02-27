@@ -1,5 +1,5 @@
-export default async function updateProfile({ busboy, body, user }, app) {
-  await busboy.finish();
+export default async function updateProfile(ctx, app) {
+  const { body, user } = ctx;
 
   const { fn, ln } = body;
 

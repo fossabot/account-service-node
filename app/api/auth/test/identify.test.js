@@ -1,29 +1,26 @@
-import { agent, errors } from "../../../../test/utils";
+import { agent } from "../../../../test/utils";
+import { invalidId, userNotFound } from "./errors";
 
 export default () => {
   describe("/identify", () => {
-    it("error response if incomplete fields", async () => {
+    it("error response if provide invalid identification", async () => {
       await agent()
-        .post("/auth/identify")
-        .field("_", "")
-        .expect(400, { ...errors[400] });
+        .get("/auth/identify/_")
+        .expect(422, invalidId);
     });
 
     it("found the user", async () => {
       await agent()
-        .post("/auth/identify")
-        .field("id", "82988704537")
+        .get("/auth/identify/82988704537")
         .expect(200, {
-          next: "credential",
           user: { fn: "nando" }
         });
     });
 
     it("not found user", async () => {
       await agent()
-        .post("/auth/identify")
-        .field("id", "82988444437")
-        .expect(200, { user: null });
+        .get("/auth/identify/82988444437")
+        .expect(404, userNotFound);
     });
   });
 };

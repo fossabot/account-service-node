@@ -10,9 +10,7 @@ export default () => {
 
       const { uid, sid } = decode(token);
 
-      expect((await request("post", "/auth/unsign")).body.message).to.be.eq(
-        "ok"
-      );
+      expect((await request("post", "/auth/unsign")).status).to.be.eq(200);
 
       global.token["82988704537"] = false;
 

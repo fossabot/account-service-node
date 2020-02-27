@@ -1,12 +1,13 @@
-export default async function identifyUser({ busboy, body }, app) {
-  await busboy.finish();
+import { userNotFound } from "./errors";
+import { id } from "./validations";
 
-  if (!body.id || body.id.length > 20) throw app.createError(400);
+export default async function identifyUser({ params }, app) {
+  await app.validation(params, { id });
 
-  const user = await app.models.users.get(body.id);
+  const user = await app.models.users.get(params.id);
 
   if (!user) {
-    return { content: { user: null } };
+    throw userNotFound();
   }
 
   return {
@@ -14,8 +15,7 @@ export default async function identifyUser({ busboy, body }, app) {
       user: {
         fn: user.fn,
         photo: user.photo
-      },
-      next: "credential"
+      }
     }
   };
 }
