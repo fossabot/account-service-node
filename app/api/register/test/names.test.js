@@ -1,85 +1,111 @@
-import { expect } from "chai";
-import { agent } from "../../../../test/utils";
+import { request, result } from "../../../../test/utils";
+import {
+  invalidUsername,
+  inUseUsername,
+  invalidFirstname,
+  invalidLastname
+} from "./errors";
 
 export default () => {
   describe("/names", () => {
+    const url = "/register/names";
     it("error response if invalid username", async () => {
-      const { status: resCode1, body: body1 } = await agent()
-        .post("/register/names")
-        .field("username", "..11564.");
+      result(
+        await request("post", url, {
+          json: {
+            username: "..11564."
+          }
+        }),
+        { "4xx": invalidUsername }
+      );
 
-      expect(resCode1).to.be.eq(400);
-      expect(body1.message).to.be.eq("invalid username");
+      result(
+        await request("post", url, {
+          json: {
+            username: "a"
+          }
+        }),
+        { "4xx": invalidUsername }
+      );
 
-      const { status: resCode2, body: body2 } = await agent()
-        .post("/register/names")
-        .field("username", "a");
-
-      expect(resCode2).to.be.eq(400);
-      expect(body2.message).to.be.eq("invalid username");
-
-      const { status: resCode3, body: body3 } = await agent()
-        .post("/register/names")
-        .field("username", "ab");
-
-      expect(resCode3).to.be.eq(400);
-      expect(body3.message).to.be.eq("invalid username");
+      result(
+        await request("post", url, {
+          json: {
+            username: "ab"
+          }
+        }),
+        { "4xx": invalidUsername }
+      );
     });
 
     it("already registred username", async () => {
-      await agent()
-        .post("/register/names")
-        .field("username", "ferco1")
-        .field("fn", "fernando")
-        .field("fn", "costa")
-        .expect(200, { message: "in use" });
+      result(
+        await request("post", url, {
+          json: {
+            username: "ferco1"
+          }
+        }),
+        { "4xx": inUseUsername }
+      );
     });
 
     it("invalid name", async () => {
-      const { status: resCode1, body: body1 } = await agent()
-        .post("/register/names")
-        .field("username", "username")
-        .field("fn", "00");
+      result(
+        await request("post", url, {
+          json: {
+            username: "username",
+            fn: "00"
+          }
+        }),
+        { "4xx": invalidFirstname }
+      );
 
-      expect(resCode1).to.be.eq(400);
-      expect(body1.message).to.be.eq("invalid name");
-
-      const { status: resCode2, body: body2 } = await agent()
-        .post("/register/names")
-        .field("username", "username")
-        .field("fn", "fo");
-
-      expect(resCode2).to.be.eq(400);
-      expect(body2.message).to.be.eq("invalid name");
+      result(
+        await request("post", url, {
+          json: {
+            username: "username",
+            fn: "fo"
+          }
+        }),
+        { "4xx": invalidFirstname }
+      );
     });
 
     it("invalid last name", async () => {
-      const { status: resCode1, body: body1 } = await agent()
-        .post("/register/names")
-        .field("username", "username")
-        .field("fn", "Vanilla")
-        .field("ln", "0");
+      result(
+        await request("post", url, {
+          json: {
+            username: "username",
+            fn: "Vanilla",
+            ln: "0"
+          }
+        }),
+        { "4xx": invalidLastname }
+      );
 
-      expect(resCode1).to.be.eq(400);
-      expect(body1.message).to.be.eq("invalid last name");
-
-      const { status: resCode2, body: body2 } = await agent()
-        .post("/register/names")
-        .field("username", "username")
-        .field("fn", "Vanilla")
-        .field("ln", "fo");
-
-      expect(resCode2).to.be.eq(400);
-      expect(body2.message).to.be.eq("invalid last name");
+      result(
+        await request("post", url, {
+          json: {
+            username: "username",
+            fn: "Vanilla",
+            ln: "fo"
+          }
+        }),
+        { "4xx": invalidLastname }
+      );
     });
 
     it("valid names", async () => {
-      await agent()
-        .post("/register/names")
-        .field("username", "username")
-        .field("fn", "Vanilla")
-        .field("ln", "Origin")
-        .expect(200, { message: "ok" });
+      result(
+        await request("post", url, {
+          json: {
+            username: "username",
+            fn: "Vanilla",
+            ln: "Origin"
+          }
+        }),
+        200
+      );
     });
   });
 };

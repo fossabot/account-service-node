@@ -48,13 +48,7 @@ export default async function contact(
     const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
     const to = type === "phones" ? `+${user.data.ncode}${body.add}` : body.add;
 
-    const { send } = await verification.create(
-      `${userId}${body.add}`,
-      to,
-      body.renew
-    );
-
-    send && (await send(type === "phones" ? "phone" : "email"));
+    await verification.create(`${userId}${body.add}`, to, body.renew);
   }
 
   /**

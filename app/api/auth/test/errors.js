@@ -1,37 +1,40 @@
-import { errors } from "../../../../test/utils";
+import { errors as errorsBases } from "../../../../test/utils";
+import * as errors from "../errors";
 
-export const invalidId = {
-  ...errors[422],
-  message: "Invalid identification",
-  code: "1"
+const e422 = errorsBases[422];
+
+export const identification = {
+  invalid: {
+    ...e422,
+    ...errors.identification.invalid
+  }
 };
 
-export const userNotFound = {
-  ...errors[404],
-  message: "User not found",
-  code: "2"
+export const user = {
+  invalid: {
+    ...e422,
+    ...errors.user.notFound
+  }
 };
 
-export const invalidPassword = {
-  ...errors[422],
-  message: "Invalid password",
-  code: "3"
+export const password = {
+  invalid: {
+    ...e422,
+    ...errors.password.invalid
+  },
+  wrong: {
+    ...e422,
+    ...errors.password.wrong
+  }
 };
 
-export const wrongPassword = {
-  ...errors[422],
-  message: "Wrong password",
-  code: "4"
-};
-
-export const invalidCode = {
-  ...errors[422],
-  message: "Invalid code",
-  code: "5"
-};
-
-export const wrongCode = {
-  ...errors[422],
-  message: "Wrong code",
-  code: "6"
+export const code = {
+  invalid: {
+    ...e422,
+    ...errors.code.invalid
+  },
+  wrong: {
+    ...e422,
+    ...errors.code.wrong
+  }
 };

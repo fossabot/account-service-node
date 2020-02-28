@@ -1,15 +1,15 @@
-import { id, code } from "./validations";
-import { wrongCode } from "./errors";
+import { id, code as codeError } from "./validations";
+import { code } from "./errors";
 
 export default async function codeController(ctx, app) {
-  const { busboy, body } = ctx;
-  await busboy.finish();
-  await app.validation(body, { id, code });
+  await app.validation.validate(ctx.body, { id, code: codeError });
 
-  const { id: uid, code: sentCode } = body;
+  const { id: uid, code: sentCode } = ctx.body;
 
   if (!(await app.verification.check(uid, sentCode))) {
-    throw wrongCode();
+    throw app.createError(code.wrong.statusCode, code.wrong.message, {
+      code: code.wrong.code
+    });
   }
 
   const { token: content } = await app.sessions.create(uid, ctx);

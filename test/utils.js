@@ -1,4 +1,5 @@
 import stRequest from "supertest";
+import { expect } from "chai";
 import app from "../app";
 import { hash } from "bcrypt";
 const firebase = require("@firebase/testing");
@@ -47,6 +48,19 @@ before(async () => {
         cpf: "43325320074",
         authSecondFactor: "+5582988873647",
         birth: new Date("12/25/1988")
+      },
+      {
+        pw,
+        fn: "Origin",
+        ln: "Vanilla",
+        username: "vanilla",
+        access: 1,
+        ncode: "55",
+        phones: ["82988873648"],
+        emails: ["ferc@live.com"],
+        cpf: "16096249043",
+        authSecondFactor: "ferc@live.com",
+        birth: new Date("12/25/1988")
       }
     ].map(user => app.models.users.set(user))
   );
@@ -77,16 +91,16 @@ export const getToken = async (id = "82988704537") => {
   if (global.token[id]) return global.token[id];
   const { status, body } = await agent()
     .post("/auth/credential")
-    .field("id", id)
-    .field("pw", "123456");
+    .set("Content-Type", "application/json")
+    .send({ id, pw: "123456" });
   let token;
 
   if (status === 200) {
     const { code } = await app.cache.get("verificationCode", id);
     const { body: bodyc } = await agent()
       .post("/auth/code")
-      .field("id", id)
-      .field("code", code);
+      .set("Content-Type", "application/json")
+      .send({ id, code });
     token = bodyc.content;
   } else {
     token = body.content;
@@ -99,9 +113,10 @@ export const getToken = async (id = "82988704537") => {
 export const request = async (
   method,
   url,
-  { auth = true, headers = {}, json, fields } = {}
+  { auth = false, headers = {}, json, fields } = {}
 ) => {
   const token = await getToken();
+
   const ag = agent()[method](url);
 
   for (const header in headers) {
@@ -124,31 +139,40 @@ export const request = async (
   return ag;
 };
 
+export function result(response, { "2xx": status2xx, "4xx": status4xx }) {
+  const { status, body } = response;
+  if (status2xx) {
+    expect(status).to.be.eq(status2xx.code);
+
+    if (status2xx.body) {
+      for (const field in status2xx.body) {
+        const value = status2xx.body[field];
+
+        if (typeof value === "object" && typeof value.type === "string") {
+          expect(body[field]).to.be.a(status2xx.body[field].type);
+        } else {
+          expect(body[field]).to.be.eq(status2xx.body[field]);
+        }
+      }
+    }
+
+    return response;
+  }
+
+  if (status4xx) {
+    if (typeof result === "number") {
+      expect(status).to.be.eq(result);
+      return response;
+    }
+
+    expect(status).to.be.eq(status4xx.statusCode);
+    expect(body).to.be.deep.eq(status4xx);
+
+    return response;
+  }
+}
+
 export const randomPhone = () => `8298870${rand()}`;
-
-// https://pt.stackoverflow.com/questions/244457/gerador-de-cpf-em-javascript
-export const randomCPF = () => {
-  const n1 = aleatorio();
-  const n2 = aleatorio();
-  const n3 = aleatorio();
-  const d1 = dig(n1, n2, n3);
-  return `${n1}${n2}${n3}${d1}${dig(n1, n2, n3, d1)}`;
-};
-
-function dig(n1, n2, n3, n4) {
-  const nums = n1.split("").concat(n2.split(""), n3.split(""));
-
-  let x = 0;
-  if (n4) nums[9] = n4;
-  for (let i = n4 ? 11 : 10, j = 0; i >= 2; i--, j++)
-    x += parseInt(nums[j]) * i;
-  const y = x % 11;
-  return y < 2 ? 0 : 11 - y;
-}
-
-function aleatorio() {
-  return ("" + Math.floor(Math.random() * 999)).padStart(3, "0");
-}
 
 export const errors = {
   422: {

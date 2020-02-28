@@ -1,6 +1,8 @@
+import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { agent, getToken, errors } from "../../../test/utils";
+import { agent, request, result, getToken } from "../../../test/utils";
 import app from "../../index";
+import { invalidToken } from "./errors";
 
 export default () => {
   const accountGetExpect = {
@@ -18,34 +20,39 @@ export default () => {
 
   describe("authorization", () => {
     it("deny by empty token", async () => {
-      await agent()
-        .get("/account")
-        .set("authorization", "")
-        .expect(400, { ...errors[400], message: "token must be provided" });
+      result(
+        await request("get", "/account", { headers: { authorization: "" } }),
+        { "4xx": invalidToken }
+      );
     });
 
     it("deny by invalid token", async () => {
       const token = await getToken();
-      await agent()
-        .get("/account")
-        .set("authorization", `123${token}`)
-        .expect(400, { ...errors[400], message: "invalid token" });
+
+      result(
+        await request("get", "/account", {
+          headers: { authorization: `123${token}` }
+        }),
+        { "4xx": invalidToken }
+      );
     });
 
     it("deny by invalid session", async () => {
-      const token = await getToken();
+      const authorization = await getToken();
 
-      const { sid } = decode(token);
+      const { sid } = decode(authorization);
 
       await app.cache.del("session", sid);
-      await app.models.sessions.del(sid);
+      await app.models.sessions.set(sid, { active: false });
 
       global.token["82988704537"] = false;
 
-      await agent()
-        .get("/account")
-        .set("authorization", token)
-        .expect(406, { ...errors[406], message: "invalid session" });
+      result(
+        await request("get", "/account", {
+          headers: { authorization }
+        }),
+        { "4xx": invalidToken }
+      );
     });
 
     it("deny by invalid signature", async () => {
@@ -54,19 +61,25 @@ export default () => {
       const { uid, sid } = decode(token);
       await app.cache.del("token", `${uid}.${sid}`);
 
-      await agent()
-        .get("/account")
-        .set("authorization", `${token}123`)
-        .expect(400, { ...errors[400], message: "invalid token" });
+      result(
+        await request("get", "/account", {
+          headers: { authorization: `${token}123` }
+        }),
+        { "4xx": invalidToken }
+      );
     });
 
     it("get token from persistent storage", async () => {
-      const token = await getToken();
+      const authorization = await getToken();
 
-      await agent()
-        .get("/account")
-        .set("authorization", token)
-        .expect(200, accountGetExpect);
+      const { body } = result(
+        await request("get", "/account", {
+          headers: { authorization }
+        }),
+        { "2xx": { code: 200 } }
+      );
+
+      expect(body).to.be.deep.eq(accountGetExpect);
     });
 
     it("get token from cache", async () => {

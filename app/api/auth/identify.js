@@ -1,21 +1,19 @@
-import { userNotFound } from "./errors";
 import { id } from "./validations";
+import { user } from "./errors";
 
-export default async function identifyUser({ params }, app) {
-  await app.validation(params, { id });
+export default async function identifyUser(ctx, app) {
+  await app.validation.validate(ctx.params, { id });
 
-  const user = await app.models.users.get(params.id);
+  const userQuery = await app.models.users.get(ctx.params.id);
 
-  if (!user) {
-    throw userNotFound();
+  if (!userQuery) {
+    throw app.createError(user.notFound.code, user.notFound.message);
   }
 
   return {
     content: {
-      user: {
-        fn: user.fn,
-        photo: user.photo
-      }
+      fn: userQuery.fn,
+      photo: userQuery.photo
     }
   };
 }

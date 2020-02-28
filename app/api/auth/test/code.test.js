@@ -1,62 +1,79 @@
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { agent } from "../../../../test/utils";
+import { request, result } from "../../../../test/utils";
 import app from "../../../index";
-import { invalidCode, wrongCode } from "./errors";
+import { code } from "./errors";
 
 export default () => {
   describe("/code", () => {
-    it("invalid code", async () => {
-      await agent()
-        .post("/auth/code")
-        .field("id", "82999999999")
-        .expect(422, invalidCode);
+    const credentialEndpoint = "/auth/credential";
+    const codeEndpoint = "/auth/code";
 
-      await agent()
-        .post("/auth/code")
-        .field("code", "00")
-        .field("id", "82999999999")
-        .expect(422, invalidCode);
+    it("invalid code", async () => {
+      result(
+        await request("post", codeEndpoint, { json: { id: "82999999999" } }),
+        {
+          "4xx": code.invalid
+        }
+      );
+      result(
+        await request("post", codeEndpoint, {
+          json: { id: "82999999999", code: "00" }
+        }),
+        { "4xx": code.invalid }
+      );
     });
 
     it("inexistent code", async () => {
-      await agent()
-        .post("/auth/code")
-        .field("id", "82999999999")
-        .field("code", "12345")
-        .expect(422, wrongCode);
+      result(
+        await request("post", codeEndpoint, {
+          json: { id: "82999999999", code: "12345" }
+        }),
+        { "4xx": code.wrong }
+      );
     });
 
     it("wrong code", async () => {
-      await agent()
-        .post("/auth/credential")
-        .field("id", "82988873646")
-        .field("pw", "123456")
-        .expect(200, { content: "** *****-3646" });
+      result(
+        await request("post", credentialEndpoint, {
+          json: { id: "82988873646", pw: "123456" }
+        }),
+        { "2xx": { code: 200, body: { content: { type: "string" } } } }
+      );
 
-      await agent()
-        .post("/auth/code")
-        .field("id", "82988873646")
-        .field("code", "12345")
-        .expect(422, wrongCode);
+      result(
+        await request("post", codeEndpoint, {
+          json: { id: "82988873646", code: "12345" }
+        }),
+        { "4xx": code.wrong }
+      );
     });
 
     it("right code", async () => {
-      const { code } = await app.cache.get("verificationCode", "82988873646");
+      const { code } = await app.verification.get("82988873646");
 
       expect(code).to.be.a("string");
 
-      const { body } = await agent()
-        .post("/auth/code")
-        .field("id", "82988873646")
-        .field("code", code)
-        .expect(201);
-
+      const { body } = result(
+        await request("post", codeEndpoint, {
+          json: { id: "82988873646", code }
+        }),
+        { "2xx": { code: 201 } }
+      );
       const decoded = await decode(body.content);
 
       expect(decoded)
         .to.be.a("object")
         .that.have.all.keys(["sid", "uid", "iat"]);
+    });
+
+    it("generate code by email", async () => {
+      result(
+        await request("post", credentialEndpoint, {
+          json: { id: "ferc@live.com", pw: "123456" }
+        }),
+        { "2xx": { code: 200, body: { content: "fer*@live.com" } } }
+      );
     });
   });
 };

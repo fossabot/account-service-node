@@ -1,4 +1,4 @@
-// import { isValidEmail } from "@brazilian-utils/brazilian-utils";
+import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 
 export default function verification(app) {
   const { cache, email, sms } = app;
@@ -26,18 +26,21 @@ export default function verification(app) {
       60 * 15
     );
 
+    const type = isValidEmail(to) ? "email" : "phone";
+
+    if (app.isProduction) {
+      await send(to, type, type === "email" ? messageHTML : message);
+    }
+
+    app.isDev && console.log("Code:", code);
+
     return {
       code,
-      created,
-      send(type) {
-        return app.isProduction
-          ? send(type, to, type === "email" ? messageHTML : message)
-          : app.isDev && console.log("Code:", code);
-      }
+      created
     };
   }
 
-  async function send(type, to, content) {
+  async function send(to, type, content) {
     switch (type) {
       case "email":
         return email.send(to, content);
@@ -72,31 +75,31 @@ export default function verification(app) {
     return cache.del("verificationCode", id);
   }
 
+  function make() {
+    const code = Math.floor(Math.random() * 99999)
+      .toString()
+      .padStart(5, "0");
+
+    const message = `Código de verificação do ${process.env.APP_NAME}:\n${code}`;
+    const messageHTML = `
+      <center>
+        <img src="cid:guru-logo250.png" />
+        <h1>Guru</h1>
+        <br />
+        <p>Seu código de verificação:</p>
+        <br />
+        <strong>${code}</strong>
+      </center>
+      <br>
+      <p>Esse email é auto-gerado, não o responda.</p>
+    `;
+
+    return {
+      code,
+      message,
+      messageHTML
+    };
+  }
+
   return { get, create, update, check, remove };
-}
-
-function make() {
-  const code = Math.floor(Math.random() * 99999)
-    .toString()
-    .padStart(5, "0");
-
-  const message = `Código de verificação do ${process.env.APP_NAME}:\n${code}`;
-  const messageHTML = `
-    <center>
-      <img src="cid:guru-logo250.png" />
-      <h1>Guru</h1>
-      <br />
-      <p>Seu código de verificação:</p>
-      <br />
-      <strong>${code}</strong>
-    </center>
-    <br>
-    <p>Esse email é auto-gerado, não o responda.</p>
-  `;
-
-  return {
-    code,
-    message,
-    messageHTML
-  };
 }

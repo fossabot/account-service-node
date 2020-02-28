@@ -6,11 +6,13 @@ import { request, getToken } from "../../../../test/utils";
 export default () => {
   describe("/unsign", () => {
     it("simply work", async () => {
-      const token = await getToken();
+      const auth = await getToken();
 
-      const { uid, sid } = decode(token);
+      const { uid, sid } = decode(auth);
 
-      expect((await request("post", "/auth/unsign")).status).to.be.eq(200);
+      expect((await request("post", "/auth/unsign", { auth })).status).to.be.eq(
+        200
+      );
 
       global.token["82988704537"] = false;
 

@@ -25,6 +25,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/profile", {
+            auth: true,
             json: { fn: "_fernando" }
           })
         ).status
@@ -33,6 +34,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/profile", {
+            auth: true,
             json: { ln: "fernando0" }
           })
         ).status
@@ -43,6 +45,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/profile", {
+            auth: true,
             json: {
               fn: "fernando",
               ln: "antonio"
@@ -51,20 +54,30 @@ export default () => {
         ).status
       ).to.be.eq(201);
 
-      expect((await request("get", "/account")).body).to.deep.eq({
+      expect(
+        (await request("get", "/account", { auth: true })).body
+      ).to.deep.eq({
         ...initialAccountExpect,
         fn: "fernando",
         ln: "antonio"
       });
 
       expect(
-        (await request("put", "/account/profile", { json: { fn: "nando" } }))
-          .status
+        (
+          await request("put", "/account/profile", {
+            auth: true,
+            json: { fn: "nando" }
+          })
+        ).status
       ).to.be.eq(201);
 
       expect(
-        (await request("put", "/account/profile", { json: { ln: "costa" } }))
-          .status
+        (
+          await request("put", "/account/profile", {
+            auth: true,
+            json: { ln: "costa" }
+          })
+        ).status
       ).to.be.eq(201);
     });
   });
@@ -77,6 +90,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "000000",
               want: "123456"
@@ -89,6 +103,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "123456",
               want: ""
@@ -100,6 +115,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "",
               want: "123456"
@@ -111,6 +127,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "123",
               want: ""
@@ -122,6 +139,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "123456",
               want: "123"
@@ -135,6 +153,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "123456",
               want: "654321"
@@ -150,6 +169,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/password", {
+            auth: true,
             json: {
               current: "654321",
               want: "123456"
@@ -172,6 +192,7 @@ export default () => {
     async function setSecondFactor(authSecondFactor) {
       return (
         await request("put", "/account/auth", {
+          auth: true,
           json: {
             authSecondFactor
           }
@@ -221,6 +242,7 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
+                auth: true,
                 json: {
                   add: "82988873646"
                 }
@@ -233,6 +255,7 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
+                auth: true,
                 json: {
                   add
                 }
@@ -245,6 +268,7 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
+                auth: true,
                 json: {
                   add,
                   code: ""
@@ -256,6 +280,7 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
+                auth: true,
                 json: {
                   add,
                   code: "12345"
@@ -272,6 +297,7 @@ export default () => {
           expect(
             (
               await request("put", "/account/contact", {
+                auth: true,
                 json: {
                   add,
                   code
@@ -295,6 +321,7 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
+              auth: true,
               json: {
                 remove
               }
@@ -314,6 +341,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/contact", {
+            auth: true,
             json: {
               add: ""
             }
@@ -324,6 +352,7 @@ export default () => {
       expect(
         (
           await request("put", "/account/contact", {
+            auth: true,
             json: {
               remove: ""
             }
@@ -337,6 +366,7 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
+              auth: true,
               json: {
                 add: "578798"
               }
@@ -354,6 +384,7 @@ export default () => {
         expect(
           (
             await request("put", "/account/contact", {
+              auth: true,
               json: {
                 remove: "578798"
               }

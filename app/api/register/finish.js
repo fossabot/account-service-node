@@ -1,7 +1,7 @@
 import * as validations from "./validations";
 
 export default async function record(ctx, app) {
-  await app.validation(ctx.body, validations);
+  await app.validation.validate(ctx.body, validations);
 
   const { username, fn, ln, ncode, phone, cpf, birth, pw, terms } = ctx.body;
 

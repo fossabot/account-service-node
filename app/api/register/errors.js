@@ -1,39 +1,39 @@
 export const countryCode = {
-  invalid: { message: "Invalid country code", code: "1" }
+  invalid: { statusCode: 422, code: "1", message: "Invalid country code" }
 };
 
 export const phone = {
-  invalid: { message: "Invalid number", code: "2" },
-  inUse: { message: "Number in use", code: "3" }
+  invalid: { statusCode: 422, code: "2", message: "Invalid number" },
+  inUse: { statusCode: 422, code: "3", message: "Number in use" }
 };
 
 export const code = {
-  invalid: { message: "Invalid code", code: "4" },
-  wrong: { message: "Wrong code", code: "5" }
+  invalid: { statusCode: 422, code: "4", message: "Invalid code" },
+  wrong: { statusCode: 422, code: "5", message: "Wrong code" }
 };
 
 export const cpf = {
-  invalid: { message: "Invalid cpf", code: "6" },
-  inUse: { message: "CPF in use", code: "7" }
+  invalid: { statusCode: 422, code: "6", message: "Invalid cpf" },
+  inUse: { statusCode: 422, code: "7", message: "CPF in use" }
 };
 
 export const birth = {
-  invalid: { message: "Invalid birth", code: "8" }
+  invalid: { statusCode: 422, code: "8", message: "Invalid birth" }
 };
 
 export const password = {
-  invalid: { message: "Invalid password", code: "9" }
+  invalid: { statusCode: 422, code: "9", message: "Invalid password" }
 };
 
 export const username = {
-  invalid: { message: "Invalid username", code: "10" },
-  inUse: { messagE: "Username in use", code: "11" }
+  invalid: { statusCode: 422, code: "10", message: "Invalid username" },
+  inUse: { statusCode: 422, code: "11", message: "Username in use" }
 };
 
 export const firstName = {
-  invalid: { message: "Invalid first name", code: "12" }
+  invalid: { statusCode: 422, code: "12", message: "Invalid first name" }
 };
 
 export const lastName = {
-  invalid: { message: "Invalid last name", code: "13" }
+  invalid: { statusCode: 422, code: "13", message: "Invalid last name" }
 };

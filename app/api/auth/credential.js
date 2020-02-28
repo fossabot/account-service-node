@@ -1,27 +1,28 @@
 import { compare } from "bcrypt";
 import { isValidEmail } from "@brazilian-utils/brazilian-utils";
-import { userNotFound, wrongPassword } from "./errors";
+import { user, password } from "./errors";
 import { id, pw } from "./validations";
 
 export default async function credential(ctx, app) {
-  const { busboy, body } = ctx;
-  await busboy.finish();
-  await app.validation(ctx.body, { id, pw });
+  await app.validation.validate(ctx.body, { id, pw });
 
-  const user = await app.models.users.get(body.id);
-  console.log("@user", user);
-  if (!user) {
-    throw userNotFound();
+  const userQuery = await app.models.users.get(ctx.body.id);
+  if (!userQuery) {
+    throw app.createError(user.notFound.statusCode, user.notFound.message, {
+      code: user.notFound.code
+    });
   }
 
-  if (!(await compare(body.pw, user.pw))) {
-    throw wrongPassword();
+  if (!(await compare(ctx.body.pw, userQuery.pw))) {
+    throw app.createError(password.wrong.statusCode, password.wrong.message, {
+      code: password.wrong.code
+    });
   }
 
-  const secondFactor = user.authSecondFactor;
+  const secondFactor = userQuery.authSecondFactor;
 
   if (!secondFactor) {
-    const { token: content } = await app.sessions.create(user.id, ctx);
+    const { token: content } = await app.sessions.create(userQuery.id, ctx);
 
     return {
       code: 201,
@@ -31,16 +32,10 @@ export default async function credential(ctx, app) {
     };
   }
 
-  const { send } = await app.verification.create(
-    body.id,
-    secondFactor,
-    body.renew
-  );
+  await app.verification.create(ctx.body.id, secondFactor, ctx.body.renew);
   const isEmail = isValidEmail(secondFactor);
 
-  send && (await send(isEmail ? "email" : "phone"));
-
-  if (isEmail && body.id !== secondFactor) {
+  if (isEmail) {
     // mask email -> ema**@provider.com
     const parts = secondFactor.split("@");
     return {

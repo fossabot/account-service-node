@@ -1,18 +1,41 @@
-import app from "../../index";
+export const identification = {
+  invalid: {
+    statusCode: 422,
+    code: "1",
+    message: "Invalid identification"
+  }
+};
 
-export const invalidId = () =>
-  app.createError(422, "Invalid identification", { code: 1 });
+export const user = {
+  notFound: {
+    statusCode: 404,
+    code: "2",
+    message: "User not found"
+  }
+};
 
-export const userNotFound = () =>
-  app.createError(404, "User not found", { code: 2 });
+export const password = {
+  invalid: {
+    statusCode: 422,
+    code: "3",
+    message: "Invalid password"
+  },
+  wrong: {
+    statusCode: 422,
+    code: "4",
+    message: "Wrong password"
+  }
+};
 
-export const invalidPassword = () =>
-  app.createError(422, "Invalid password", { code: 3 });
-
-export const wrongPassword = () =>
-  app.createError(422, "Wrong password", { code: 4 });
-
-export const invalidCode = () =>
-  app.createError(422, "Invalid code", { code: 5 });
-
-export const wrongCode = () => app.createError(422, "Wrong code", { code: 6 });
+export const code = {
+  invalid: {
+    statusCode: 422,
+    code: "5",
+    message: "Invalid code"
+  },
+  wrong: {
+    statusCode: 422,
+    code: "6",
+    message: "Wrong code"
+  }
+};

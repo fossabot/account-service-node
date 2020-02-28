@@ -1,16 +1,13 @@
 import { code, cpf, birth } from "./validations";
 
-export default async function cpfController(
-  { body },
-  { validation, verification }
-) {
-  await validation(body, {
+export default async function cpfController(ctx, app) {
+  await app.validation.validate(ctx.body, {
     code,
     cpf,
     birth
   });
 
-  await verification.update(`reg:${body.phone}`, { cpf: body.cpf });
+  await app.verification.update(`reg:${ctx.body.phone}`, { cpf: ctx.body.cpf });
 
   return { code: 200 };
 }

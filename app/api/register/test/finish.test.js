@@ -1,112 +1,42 @@
 import { expect } from "chai";
 import faker from "faker";
 import app from "../../../index";
-import { agent, errors, randomPhone, randomCPF } from "../../../../test/utils";
+import { generateCPF } from "@brazilian-utils/brazilian-utils";
+import { request, result, randomPhone } from "../../../../test/utils";
 
 export default () => {
   describe("/finish", () => {
-    const nbr = randomPhone();
-    let code;
-    let cpf;
-
-    it("invalid password", async () => {
-      expect(
-        (
-          await agent()
-            .post("/register/phone")
-            .field("ncode", "55")
-            .field("nbr", nbr)
-        ).status
-      ).to.be.eq(201);
-
-      const { code: cod } = await app.cache.get(
-        "verificationCode",
-        `+55${nbr}`
-      );
-      cpf = randomCPF();
-      code = cod;
-
-      expect(
-        (
-          await agent()
-            .post("/register/code")
-            .field("ncode", "55")
-            .field("nbr", nbr)
-            .field("code", cod)
-        ).status
-      ).to.be.eq(200);
-
-      expect(
-        (
-          await agent()
-            .post("/register/cpf")
-            .field("ncode", "55")
-            .field("nbr", nbr)
-            .field("code", cod)
-            .field("cpf", cpf)
-            .field("birth", "06/13/1994")
-        ).body.message
-      ).to.be.eq("ok");
-
-      const req1 = await agent()
-        .post("/register/finish")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", cod)
-        .field("cpf", cpf)
-        .field("fn", faker.name.firstName())
-        .field("ln", faker.name.lastName())
-        .field("username", faker.internet.userName())
-        .field("birth", "06/13/1994")
-        .expect(400, { ...errors[400], message: "invalid password" });
-
-      expect(req1.status).to.be.eq(400);
-      expect(req1.body.message).to.be.eq("invalid password");
-
-      const req2 = await agent()
-        .post("/register/finish")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", cod)
-        .field("cpf", cpf)
-        .field("fn", faker.name.firstName())
-        .field("ln", faker.name.lastName())
-        .field("username", faker.internet.userName())
-        .field("pw", "1234")
-        .field("birth", "06/13/1994")
-        .expect(400, { ...errors[400], message: "invalid password" });
-
-      expect(req2.status).to.be.eq(400);
-      expect(req2.body.message).to.be.eq("invalid password");
-    });
+    const phone = randomPhone();
+    const json = {
+      ncode: "55",
+      phone
+    };
 
     it("should be registered", async () => {
-      const { body } = await agent()
-        .post("/register/finish")
-        .field("ncode", "55")
-        .field("nbr", nbr)
-        .field("code", code)
-        .field("cpf", cpf)
-        .field("fn", faker.name.firstName())
-        .field("ln", faker.name.lastName())
-        .field("username", faker.internet.userName())
-        .field("pw", "1234567")
-        .field("birth", "06/13/1994")
-        .field("terms", "true")
-        .expect(201);
+      json.cpf = generateCPF();
+      json.birth = "06/13/1994";
+      json.code = (await app.verification.create(`reg:${json.phone}`)).code;
 
-      expect(body)
-        .to.be.a("object")
-        .that.have.all.keys(["id", "message"]);
+      await app.verification.update(`reg:${json.phone}`, { cpf: json.cpf });
 
-      expect(body.id).to.be.a("string");
-      expect(body.message).to.be.eq("ok");
+      json.fn = faker.name.firstName();
+      json.ln = faker.name.lastName();
+      json.username = faker.internet.userName();
+      json.pw = "123456";
+      json.terms = true;
 
-      const data = await app.models.users.getById(body.id);
+      result(
+        await request("post", "/register/finish", {
+          json
+        }),
+        { "2xx": { code: 201 } }
+      );
+
+      const data = await app.models.users.get(json.username);
 
       expect(data).to.be.a("object");
-      expect(data.phones[0]).to.be.eq(nbr);
-      expect(data.cpf).to.be.eq(cpf);
+      expect(data.phones[0]).to.be.eq(json.phone);
+      expect(data.cpf).to.be.eq(json.cpf);
     });
   });
 };

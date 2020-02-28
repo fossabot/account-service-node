@@ -1,11 +1,11 @@
 import { ncode, phone } from "./validations";
 
-export default async function phoneController({ body }, app) {
-  await app.validation(body, { ncode, phone });
+export default async function phoneController(ctx, app) {
+  await app.validation.validate(ctx.body, { ncode, phone });
 
   const { send, created } = await app.verification.create(
-    `reg:${body.phone}`,
-    `+${body.ncode}${body.phone}`
+    `reg:${ctx.body.phone}`,
+    `+${ctx.body.ncode}${ctx.body.phone}`
   );
 
   send && (await send("phone"));
