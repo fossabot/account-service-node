@@ -69,7 +69,7 @@ export default () => {
       );
     });
 
-    it("get token from persistent storage", async () => {
+    it("allow token by validation", async () => {
       const authorization = await getToken();
 
       const { body } = result(
@@ -82,7 +82,7 @@ export default () => {
       expect(body).to.be.deep.eq(accountGetExpect);
     });
 
-    it("get token from cache", async () => {
+    it("allow token by previous cached validation", async () => {
       const token = await getToken();
 
       await agent()

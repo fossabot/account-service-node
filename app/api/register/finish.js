@@ -35,12 +35,12 @@ export default async function record(ctx, app) {
   });
 
   app.cache
-    .del("verificationCode", phone)
+    .del("verificationCode", `reg:${phone}`)
     .catch(e => console.error("Delete verification register code, err:", e));
 
   return {
     code: 201,
-    content: { id: user.id, message: "ok" }
+    body: { id: user.id, message: "ok" }
   };
 }
 

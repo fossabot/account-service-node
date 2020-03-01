@@ -1,27 +1,22 @@
+import { name } from "./validations";
+
 export default async function updateProfile(ctx, app) {
-  const { body, user } = ctx;
-
-  const { fn, ln } = body;
-
-  if (
-    (!fn && !ln) ||
-    !app.utils.regex.name.test(fn) ||
-    !app.utils.regex.name.test(ln)
-  ) {
-    throw app.createError(400, "invalid names");
-  }
+  await app.validation.validate(ctx.body, {
+    fn: name,
+    ln: name
+  });
 
   const data = {};
 
-  if (fn) {
-    data.fn = fn;
+  if (ctx.body.fn) {
+    data.fn = ctx.body.fn;
   }
 
-  if (ln) {
-    data.ln = ln;
+  if (ctx.body.ln) {
+    data.ln = ctx.body.ln;
   }
 
-  await user.update(data);
+  await ctx.user.update(data);
 
-  return { code: 201, content: { message: "ok" } };
+  return true;
 }

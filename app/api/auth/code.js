@@ -22,6 +22,6 @@ export default async function codeController(ctx, app) {
 
   return {
     code: 201,
-    content: { content }
+    body: { content }
   };
 }

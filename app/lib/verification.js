@@ -32,7 +32,9 @@ export default function verification(app) {
       await send(to, type, type === "email" ? messageHTML : message);
     }
 
-    app.isDev && console.log("Code:", code);
+    if (app.isDev) {
+      console.log("Code:", code);
+    }
 
     return {
       code,

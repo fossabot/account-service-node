@@ -35,7 +35,7 @@ export default () => {
       result(
         await request("post", url, {
           auth: false,
-          json: { id: "82988704537", pw: "111111" }
+          json: { id: "82988704537", pw: "654321" }
         }),
         {
           "4xx": password.wrong

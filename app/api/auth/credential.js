@@ -26,7 +26,7 @@ export default async function credential(ctx, app) {
 
     return {
       code: 201,
-      content: {
+      body: {
         content
       }
     };
@@ -39,7 +39,7 @@ export default async function credential(ctx, app) {
     // mask email -> ema**@provider.com
     const parts = secondFactor.split("@");
     return {
-      content: {
+      body: {
         content: `${parts[0].slice(0, 3).padEnd(parts[0].length, "*")}@${
           parts[1]
         }`
@@ -48,7 +48,7 @@ export default async function credential(ctx, app) {
   } else {
     // last 4 celphone digits
     return {
-      content: {
+      body: {
         content: `** *****-${secondFactor.slice(
           secondFactor.length - 4,
           secondFactor.length

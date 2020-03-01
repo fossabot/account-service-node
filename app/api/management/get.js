@@ -14,7 +14,7 @@ export default function get(ctx) {
   } = ctx.user.data;
 
   return {
-    content: {
+    body: {
       username,
       fn,
       ln,

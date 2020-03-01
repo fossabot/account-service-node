@@ -11,7 +11,7 @@ export default async function identifyUser(ctx, app) {
   }
 
   return {
-    content: {
+    body: {
       fn: userQuery.fn,
       photo: userQuery.photo
     }

@@ -62,5 +62,5 @@ export default async function updatePhoto(
 
   await user.update({ photo: upload.publicUrl });
 
-  return { code: 201, content: { message: "ok", url: upload.publicUrl } };
+  return { code: 201, body: { message: "ok", url: upload.publicUrl } };
 }

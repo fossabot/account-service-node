@@ -1,7 +1,8 @@
 import app from "../../../index";
 import { expect } from "chai";
-import { request, getToken } from "../../../../test/utils";
+import { request, result, getToken } from "../../../../test/utils";
 import { compare } from "bcrypt";
+import * as errors from "./errors";
 
 export default () => {
   const initialAccountExpect = {
@@ -22,23 +23,23 @@ export default () => {
    */
   describe("profile", () => {
     it("should response with error if invalid data", async () => {
-      expect(
-        (
-          await request("put", "/account/profile", {
-            auth: true,
-            json: { fn: "_fernando" }
-          })
-        ).status
-      ).to.be.eq(400);
+      result(
+        await request("put", "/account/profile", {
+          auth: true,
+          json: { fn: "_fernando" }
+        }),
+        { "4xx": errors.names.invalid }
+      );
 
-      expect(
-        (
-          await request("put", "/account/profile", {
-            auth: true,
-            json: { ln: "fernando0" }
-          })
-        ).status
-      ).to.be.eq(400);
+      result(
+        await request("put", "/account/profile", {
+          auth: true,
+          json: { ln: "fernando0" }
+        }),
+        {
+          "4xx": errors.names.invalid
+        }
+      );
     });
 
     it("should update", async () => {
@@ -52,7 +53,7 @@ export default () => {
             }
           })
         ).status
-      ).to.be.eq(201);
+      ).to.be.eq(200);
 
       expect(
         (await request("get", "/account", { auth: true })).body
@@ -69,7 +70,7 @@ export default () => {
             json: { fn: "nando" }
           })
         ).status
-      ).to.be.eq(201);
+      ).to.be.eq(200);
 
       expect(
         (
@@ -78,7 +79,7 @@ export default () => {
             json: { ln: "costa" }
           })
         ).status
-      ).to.be.eq(201);
+      ).to.be.eq(200);
     });
   });
 
@@ -87,96 +88,95 @@ export default () => {
    */
   describe("password", () => {
     it("should response with error if wrong password", async () => {
-      expect(
-        (
-          await request("put", "/account/password", {
-            auth: true,
-            json: {
-              current: "000000",
-              want: "123456"
-            }
-          })
-        ).status
-      ).to.be.eq(406);
+      result(
+        await request("put", "/account/password", {
+          auth: true,
+          json: {
+            current: "000000",
+            want: "123456"
+          }
+        }),
+        {
+          "4xx": errors.password.wrong
+        }
+      );
     });
-    it("should response with error if invalid data", async () => {
-      expect(
-        (
-          await request("put", "/account/password", {
-            auth: true,
-            json: {
-              current: "123456",
-              want: ""
-            }
-          })
-        ).status
-      ).to.be.eq(400);
+    it("should response with error if invalid passwords", async () => {
+      result(
+        await request("put", "/account/password", {
+          auth: true,
+          json: {
+            current: "123456",
+            want: ""
+          }
+        }),
+        { "4xx": errors.password.invalid }
+      );
 
-      expect(
-        (
-          await request("put", "/account/password", {
-            auth: true,
-            json: {
-              current: "",
-              want: "123456"
-            }
-          })
-        ).status
-      ).to.be.eq(400);
+      result(
+        await request("put", "/account/password", {
+          auth: true,
+          json: {
+            current: "",
+            want: "123456"
+          }
+        }),
+        { "4xx": errors.password.invalid }
+      );
 
-      expect(
-        (
-          await request("put", "/account/password", {
-            auth: true,
-            json: {
-              current: "123",
-              want: ""
-            }
-          })
-        ).status
-      ).to.be.eq(400);
+      result(
+        await request("put", "/account/password", {
+          auth: true,
+          json: {
+            current: "123",
+            want: ""
+          }
+        }),
+        { "4xx": errors.password.invalid }
+      );
 
-      expect(
-        (
-          await request("put", "/account/password", {
-            auth: true,
-            json: {
-              current: "123456",
-              want: "123"
-            }
-          })
-        ).status
-      ).to.be.eq(400);
+      result(
+        await request("put", "/account/password", {
+          auth: true,
+          json: {
+            current: "123456",
+            want: "123"
+          }
+        }),
+        { "4xx": errors.password.invalid }
+      );
     });
 
     it("should update", async () => {
+      const current = "123456";
+      const want = "654321";
       expect(
         (
           await request("put", "/account/password", {
             auth: true,
             json: {
-              current: "123456",
-              want: "654321"
+              current,
+              want
             }
           })
         ).status
-      ).to.be.eq(201);
+      ).to.be.eq(200);
 
       const user = await app.models.users.getByPhone("82988704537");
 
-      expect(await compare("654321", user.pw)).to.be.eq(true);
+      expect(await compare(want, user.pw)).to.be.eq(true);
 
       expect(
         (
           await request("put", "/account/password", {
             auth: true,
             json: {
-              current: "654321",
-              want: "123456"
+              current: want,
+              want: current
             }
           })
         ).status
-      ).to.be.eq(201);
+      ).to.be.eq(200);
     });
   });
 
@@ -189,38 +189,41 @@ export default () => {
         .authSecondFactor;
     }
 
-    async function setSecondFactor(authSecondFactor) {
-      return (
+    async function setSecondFactor(authSecondFactor, expec) {
+      result(
         await request("put", "/account/auth", {
           auth: true,
           json: {
             authSecondFactor
           }
-        })
-      ).status;
+        }),
+        expec
+      );
     }
 
     it("invalid field", async () => {
-      expect(await setSecondFactor("654321")).to.be.eq(400);
+      await setSecondFactor("654321", { "4xx": errors.auth.invalid });
     });
 
     it("not own the contact", async () => {
-      expect(await setSecondFactor("+5582988447880")).to.be.eq(406);
-      expect(await setSecondFactor("email@provider.com")).to.be.eq(406);
+      await setSecondFactor("+5582988447880", { "4xx": errors.auth.notOwn });
+      await setSecondFactor("email@provider.com", {
+        "4xx": errors.auth.notOwn
+      });
     });
 
     it("define number", async () => {
-      expect(await setSecondFactor("+5582988704537")).to.be.eq(201);
+      await setSecondFactor("+5582988704537", { "2xx": { code: 200 } });
       expect(await getSecondFactor()).to.be.eq("+5582988704537");
     });
 
     it("define email", async () => {
-      expect(await setSecondFactor("ferco0@live.com")).to.be.eq(201);
+      await setSecondFactor("ferco0@live.com", { "2xx": { code: 200 } });
       expect(await getSecondFactor()).to.be.eq("ferco0@live.com");
     });
 
     it("disable", async () => {
-      expect(await setSecondFactor("false")).to.be.eq(201);
+      await setSecondFactor("false", { "2xx": { code: 200 } });
       expect(await getSecondFactor()).to.be.eq(false);
     });
   });
@@ -239,16 +242,15 @@ export default () => {
       const add = data[field];
       describe(testTitle[field], () => {
         it(`contact already in use`, async () => {
-          expect(
-            (
-              await request("put", "/account/contact", {
-                auth: true,
-                json: {
-                  add: "82988873646"
-                }
-              })
-            ).body.message
-          ).to.be.eq("in use");
+          result(
+            await request("put", "/account/contact", {
+              auth: true,
+              json: {
+                add: "82988873646"
+              }
+            }),
+            { "4xx": errors.contact.item.add.inUse }
+          );
         });
 
         it(`should request addition`, async () => {
@@ -260,34 +262,32 @@ export default () => {
                   add
                 }
               })
-            ).body.message
-          ).to.be.eq("ok");
+            ).status
+          ).to.be.eq(200);
         });
 
         it(`should response addition code wrong`, async () => {
-          expect(
-            (
-              await request("put", "/account/contact", {
-                auth: true,
-                json: {
-                  add,
-                  code: ""
-                }
-              })
-            ).body.message
-          ).to.be.eq("invalid code");
+          result(
+            await request("put", "/account/contact", {
+              auth: true,
+              json: {
+                add,
+                code: ""
+              }
+            }),
+            { "4xx": errors.contact.code.invalid }
+          );
 
-          expect(
-            (
-              await request("put", "/account/contact", {
-                auth: true,
-                json: {
-                  add,
-                  code: "12345"
-                }
-              })
-            ).body.message
-          ).to.be.eq("invalid code");
+          result(
+            await request("put", "/account/contact", {
+              auth: true,
+              json: {
+                add,
+                code: "12345"
+              }
+            }),
+            { "4xx": errors.contact.code.wrong }
+          );
         });
 
         it(`should add`, async () => {
@@ -303,8 +303,8 @@ export default () => {
                   code
                 }
               })
-            ).body.message
-          ).to.be.eq("ok");
+            ).status
+          ).to.be.eq(200);
 
           const { [field]: contacts } = await app.models.users.getByEmail(
             "ferco0@live.com"
@@ -326,8 +326,8 @@ export default () => {
                 remove
               }
             })
-          ).body.message
-        ).to.be.eq("ok");
+          ).status
+        ).to.be.eq(200);
 
         const { [field]: contacts } = await app.models.users.getByEmail(
           "ferco0@live.com"
@@ -338,41 +338,44 @@ export default () => {
     }
 
     it("undefined action", async () => {
-      expect(
-        (
-          await request("put", "/account/contact", {
-            auth: true,
-            json: {
-              add: ""
-            }
-          })
-        ).body.message
-      ).to.be.eq("undefined action");
+      result(
+        await request("put", "/account/contact", {
+          auth: true,
+          json: {
+            add: ""
+          }
+        }),
+        {
+          "4xx": errors.contact.undefined
+        }
+      );
 
-      expect(
-        (
-          await request("put", "/account/contact", {
-            auth: true,
-            json: {
-              remove: ""
-            }
-          })
-        ).body.message
-      ).to.be.eq("undefined action");
+      result(
+        await request("put", "/account/contact", {
+          auth: true,
+          json: {
+            remove: ""
+          }
+        }),
+        {
+          "4xx": errors.contact.undefined
+        }
+      );
     });
 
     describe("add", () => {
       it("invalid field", async () => {
-        expect(
-          (
-            await request("put", "/account/contact", {
-              auth: true,
-              json: {
-                add: "578798"
-              }
-            })
-          ).body.message
-        ).to.be.eq("invalid fields");
+        result(
+          await request("put", "/account/contact", {
+            auth: true,
+            json: {
+              add: "578798"
+            }
+          }),
+          {
+            "4xx": errors.contact.item.invalid
+          }
+        );
       });
 
       testContactAdd("phones");
@@ -381,16 +384,15 @@ export default () => {
 
     describe("remove", () => {
       it("invalid field", async () => {
-        expect(
-          (
-            await request("put", "/account/contact", {
-              auth: true,
-              json: {
-                remove: "578798"
-              }
-            })
-          ).body.message
-        ).to.be.eq("invalid fields");
+        result(
+          await request("put", "/account/contact", {
+            auth: true,
+            json: {
+              remove: "578798"
+            }
+          }),
+          { "4xx": errors.contact.item.invalid }
+        );
       });
 
       testContactRemove("phones");
@@ -399,27 +401,25 @@ export default () => {
       it("block remove auth second factor", async () => {
         const auth = await getToken("82988873646");
 
-        expect(
-          (
-            await request("put", "/account/contact", {
-              auth,
-              json: { remove: "82988873646" }
-            })
-          ).body.message
-        ).to.be.eq("not allowed");
+        result(
+          await request("put", "/account/contact", {
+            auth,
+            json: { remove: "82988873646" }
+          }),
+          { "4xx": errors.contact.item.remove.secondFactor }
+        );
       });
 
       it("block remove unique", async () => {
         const auth = await getToken("82988873647");
 
-        expect(
-          (
-            await request("put", "/account/contact", {
-              auth,
-              json: { remove: "82988873647" }
-            })
-          ).body.message
-        ).to.be.eq("can't remove the only contact method");
+        result(
+          await request("put", "/account/contact", {
+            auth,
+            json: { remove: "82988873647" }
+          }),
+          { "4xx": errors.contact.item.remove.single }
+        );
       });
     });
   });
