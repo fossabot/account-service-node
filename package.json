@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_ENV=production node -r esm ./index.js",
     "dev": "NODE_ENV=development nodemon -r esm ./index.js",
-    "test": "NODE_ENV=test && nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
+    "test": "env NODE_ENV=test nyc mocha --require esm --reporter spec --tiemout 10000 --bail --exit --ignore './node_modules/**' ./**/index.test.js",
     "test:watch": "NODE_ENV=test && nyc mocha --require esm --tiemout 10000 --watch --ignore './node_modules/**' ./**/index.test.js",
     "lint": "./node_modules/.bin/eslint ./lib/**"
   },
@@ -21,7 +21,9 @@
     "bcrypt": "^3.0.7",
     "cloud-doc-db": "file:../../../../../firefast",
     "dotenv": "^8.2.0",
+    "file-type": "^14.1.3",
     "ioredis": "^4.14.1",
+    "jpegtran": "^1.0.6",
     "jsonwebtoken": "^8.5.1",
     "nexmo": "^2.6.0",
     "plivo": "^4.1.8",
@@ -50,7 +52,9 @@
     "nodemon": "^2.0.2",
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
+    "sharp": "^0.24.1",
     "socket.io-client": "^2.3.0",
+    "stream-buffers": "^3.0.2",
     "supertest": "^4.0.2"
   },
   "lint-staged": {

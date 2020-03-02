@@ -1,41 +1,64 @@
 import PngQuant from "pngquant";
+import JpegTran from "jpegtran";
+import FileType from "file-type";
+import { photo } from "./errors";
 
-export default async function updatePhoto(
-  { user, busboy, userId }, // context
-  { createError, storage } // app
-) {
+const validMimes = ["image/png", "image/jpg", "image/jpeg"];
+
+export default async function updatePhoto(ctx, app) {
   const upload = {};
-  const errorHandler = err => {
-    upload.error = err;
+  const errorHandler = error => {
+    if (error.expose) {
+      return ctx.emit(error);
+    }
+
+    ctx.emit(
+      app.createError(500, "Internal Server Error", {
+        source: upload.error
+      })
+    );
   };
 
-  await busboy.finish({
-    file(field, stream, name, encoding, mimetype) {
+  await ctx.busboy.finish({
+    async file(field, stream) {
       // prevent multiple file handling
       if (upload.fileName) return;
-      upload.fileName = `${userId}.${Date.now()}.png`;
+      upload.fileName = `${ctx.user.data.id}.${Date.now()}.png`;
+      stream.on("error", errorHandler);
+
+      const { mime } = await FileType.fromStream(stream);
+
+      if (validMimes.indexOf(mime) === -1) {
+        return stream.destroy(
+          app.createError(photo.invalid.statusCode, photo.invalid.message, {
+            code: photo.invalid.code
+          })
+        );
+      }
 
       let fileBytes = 0;
-      stream.on("error", errorHandler);
       stream.on("data", chunk => {
         fileBytes += chunk.length;
-        // 3mb size limit
-        if (fileBytes > 3e6) {
-          stream.destroy(createError(400, "file size limit exceeded"));
+        // 1mb size limit
+        if (fileBytes > 1e6) {
+          stream.destroy(
+            app.createError(
+              photo.limitSize.statusCode,
+              photo.limitSize.message,
+              { code: photo.limitSize.code }
+            )
+          );
         }
       });
 
-      const quanter = new PngQuant([256, "--quality", "80-90"]);
-      const quanterStream = stream.pipe(quanter);
-
-      quanterStream.on("error", errorHandler);
-
-      upload.file = storage.profilePicture.bucket.file(upload.fileName);
-      upload.publicUrl = storage.profilePicture.getPublicUrl(upload.fileName);
+      upload.file = app.storage.profilePicture.bucket.file(upload.fileName);
+      upload.publicUrl = app.storage.profilePicture.getPublicUrl(
+        upload.fileName
+      );
 
       upload.stream = upload.file.createWriteStream({
         metadata: {
-          contentType: mimetype
+          contentType: mime
         },
         public: true,
         gzip: true,
@@ -43,24 +66,24 @@ export default async function updatePhoto(
       });
       upload.stream.on("error", errorHandler);
 
-      quanterStream.pipe(upload.stream);
+      const compressor =
+        mime === "image/png"
+          ? new PngQuant([256, "--quality", "75-85"])
+          : new JpegTran();
+
+      const compressStream = stream.pipe(compressor);
+      compressStream.on("error", errorHandler);
+      compressStream.pipe(upload.stream);
     }
   });
 
-  if (upload.error) {
-    if (upload.error.statusCode) {
-      throw createError(upload.error.statusCode, upload.error.message);
-    }
-    throw createError(500, "internal");
-  }
-
-  if (user.data.photo) {
-    storage.profilePicture.delete(user.data.photo).catch(e => {
+  if (ctx.user.data.photo) {
+    app.storage.profilePicture.delete(ctx.user.data.photo).catch(e => {
       console.error("Failed to delete user old profile picture, error:", e);
     });
   }
 
-  await user.update({ photo: upload.publicUrl });
+  await ctx.user.update({ photo: upload.publicUrl });
 
-  return { code: 201, body: { message: "ok", url: upload.publicUrl } };
+  return { code: 201, body: { url: upload.publicUrl } };
 }

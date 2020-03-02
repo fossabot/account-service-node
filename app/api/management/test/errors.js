@@ -64,3 +64,14 @@ export const contact = {
     }
   }
 };
+
+export const photo = {
+  invalid: {
+    ...err,
+    ...errors.photo.invalid
+  },
+  limitSize: {
+    ...err,
+    ...errors.photo.limitSize
+  }
+};

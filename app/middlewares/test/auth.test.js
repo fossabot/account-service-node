@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { agent, request, result, getToken } from "../../../test/utils";
+import { request, result, getToken } from "../../../test/utils";
 import app from "../../index";
 import { invalidToken } from "./errors";
 
@@ -79,16 +79,22 @@ export default () => {
         { "2xx": { code: 200 } }
       );
 
-      expect(body).to.be.deep.eq(accountGetExpect);
+      expect(body.cpf).to.be.deep.eq(accountGetExpect.cpf);
+      expect(body.username).to.be.deep.eq(accountGetExpect.username);
     });
 
     it("allow token by previous cached validation", async () => {
-      const token = await getToken();
+      const authorization = await getToken();
 
-      await agent()
-        .get("/account")
-        .set("authorization", token)
-        .expect(200, accountGetExpect);
+      const { body } = result(
+        await request("get", "/account", {
+          headers: { authorization }
+        }),
+        { "2xx": { code: 200 } }
+      );
+
+      expect(body.cpf).to.be.deep.eq(accountGetExpect.cpf);
+      expect(body.username).to.be.deep.eq(accountGetExpect.username);
     });
   });
 };

@@ -48,8 +48,8 @@ export default function createAuthMiddleware({ accessGroups } = {}) {
 
     await app.cache.set("token", tokenId, true);
 
-    ctx.attach("session", session);
-    ctx.attach("userId", uid);
+    ctx.session = session;
+    ctx.userId = uid;
   };
 }
 

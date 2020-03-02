@@ -1,8 +1,9 @@
+import { expect } from "chai";
 import { agent, getToken } from "../../../../test/utils";
 
 export default () => {
   let token;
-  const initialAccountExpect = {
+  const accountExpect = {
     access: 1,
     fn: "nando",
     ln: "costa",
@@ -18,9 +19,12 @@ export default () => {
   it("get data", async () => {
     token = token || (await getToken());
 
-    await agent()
+    const { body } = await agent()
       .get("/account")
       .set("authorization", token)
-      .expect(200, initialAccountExpect);
+      .expect(200);
+
+    expect(body.cpf).to.be.eq(accountExpect.cpf);
+    expect(body.username).to.be.eq(accountExpect.username);
   });
 };

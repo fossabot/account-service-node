@@ -45,3 +45,16 @@ export const contact = {
     }
   }
 };
+
+export const photo = {
+  invalid: {
+    statusCode: 422,
+    message: "Invalid format",
+    code: "1"
+  },
+  limitSize: {
+    statusCode: 422,
+    message: "File size limit exceeded",
+    code: "2"
+  }
+};

@@ -1,23 +1,17 @@
+import { readFileSync } from "fs";
+import path from "path";
 import app from "../../../index";
 import { expect } from "chai";
 import { request, result, getToken } from "../../../../test/utils";
 import { compare } from "bcrypt";
+import sharp from "sharp";
 import * as errors from "./errors";
 
-export default () => {
-  const initialAccountExpect = {
-    access: 1,
-    fn: "nando",
-    ln: "costa",
-    cpf: "76759553072",
-    ncode: "55",
-    phones: ["82988704537", "82988797979"],
-    emails: ["ferco0@live.com"],
-    birth: "1994-06-13T03:00:00.000Z",
-    authSecondFactor: false,
-    username: "ferco1"
-  };
+const photo1MB = readFileSync(
+  path.resolve(process.cwd(), "./test/assets/1mb.jpg")
+);
 
+export default () => {
   /**
    * Profile
    */
@@ -55,13 +49,10 @@ export default () => {
         ).status
       ).to.be.eq(200);
 
-      expect(
-        (await request("get", "/account", { auth: true })).body
-      ).to.deep.eq({
-        ...initialAccountExpect,
-        fn: "fernando",
-        ln: "antonio"
-      });
+      const { body } = await request("get", "/account", { auth: true });
+
+      expect(body.fn).to.be.eq("fernando");
+      expect(body.ln).to.be.eq("antonio");
 
       expect(
         (
@@ -421,6 +412,101 @@ export default () => {
           { "4xx": errors.contact.item.remove.single }
         );
       });
+    });
+  });
+  /**
+   * Profile picture
+   */
+
+  describe("Profile photo", () => {
+    it("should update png", done => {
+      sharp({
+        create: {
+          width: 200,
+          height: 200,
+          channels: 3,
+          background: { r: 0, g: 0, b: 255 }
+        }
+      })
+        .png()
+        .toBuffer()
+        .then(async photo => {
+          result(
+            await request("put", "/account/photo", {
+              auth: true,
+              fields: { photo }
+            }),
+            { "2xx": { code: 201, body: { url: { type: "string" } } } }
+          );
+          done();
+        });
+    });
+
+    it("should update jpg", done => {
+      sharp({
+        create: {
+          width: 200,
+          height: 200,
+          channels: 3,
+          background: { r: 0, g: 0, b: 255 }
+        }
+      })
+        .jpeg()
+        .toBuffer()
+        .then(async photo => {
+          try {
+            result(
+              await request("put", "/account/photo", {
+                auth: true,
+                fields: { photo }
+              }),
+              { "2xx": { code: 201, body: { url: { type: "string" } } } }
+            );
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+    });
+
+    it("should update jpg", async () => {
+      const photo = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/xMAAv0B+unDFl4AAAAASUVORK5CYII=",
+        "base64"
+      );
+
+      result(
+        await request("put", "/account/photo", {
+          auth: true,
+          fields: { photo }
+        }),
+        { "2xx": { code: 201, body: { url: { type: "string" } } } }
+      );
+    });
+
+    it("invalid type", async () => {
+      const photo = Buffer.from(
+        "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+        "base64"
+      );
+
+      result(
+        await request("put", "/account/photo", {
+          auth: true,
+          fields: { photo }
+        }),
+        { "4xx": errors.photo.invalid }
+      );
+    });
+
+    it("file size limit", async () => {
+      result(
+        await request("put", "/account/photo", {
+          auth: true,
+          fields: { photo: photo1MB }
+        }),
+        { "4xx": errors.photo.limitSize }
+      );
     });
   });
 };
