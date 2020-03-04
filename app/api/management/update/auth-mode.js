@@ -13,7 +13,7 @@ export default async function updateAuthMode(ctx, { utils, validation }) {
   const isEmail = isValidEmail(value);
 
   if (!phone && !isEmail) {
-    throw validation.error(auth.invalid);
+    throw validation.error(auth.invalid(ctx.language));
   }
 
   const { phones, emails } = ctx.user.data;
@@ -22,7 +22,7 @@ export default async function updateAuthMode(ctx, { utils, validation }) {
     (phone && phones.indexOf(`${phone[2]}${phone[3]}${phone[4]}`) === -1) ||
     (isEmail && emails.indexOf(value) === -1)
   ) {
-    throw validation.error(auth.notOwn);
+    throw validation.error(auth.notOwn(ctx.language));
   }
 
   await ctx.user.update({ authSecondFactor: value });

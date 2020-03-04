@@ -1,41 +1,43 @@
+import * as languages from "../../lib/i18n/languages";
+
 export const identification = {
-  invalid: {
+  invalid: lang => ({
     statusCode: 422,
     code: "1",
-    message: "Invalid identification"
-  }
+    message: languages[lang].errors.InvalidIdentification
+  })
 };
 
 export const user = {
-  notFound: {
+  notFound: lang => ({
     statusCode: 404,
     code: "2",
-    message: "User not found"
-  }
+    message: languages[lang].errors.UserNotFound
+  })
 };
 
 export const password = {
-  invalid: {
+  invalid: lang => ({
     statusCode: 422,
     code: "3",
-    message: "Invalid password"
-  },
-  wrong: {
+    message: languages[lang].errors.InvalidPassword
+  }),
+  wrong: lang => ({
     statusCode: 422,
     code: "4",
-    message: "Wrong password"
-  }
+    message: languages[lang].errors.WrongPassword
+  })
 };
 
 export const code = {
-  invalid: {
+  invalid: lang => ({
     statusCode: 422,
     code: "5",
-    message: "Invalid code"
-  },
-  wrong: {
+    message: languages[lang].errors.InvalidCode
+  }),
+  wrong: lang => ({
     statusCode: 422,
     code: "6",
-    message: "Wrong code"
-  }
+    message: languages[lang].errors.WrongCode
+  })
 };

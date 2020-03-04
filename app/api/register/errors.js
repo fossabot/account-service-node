@@ -1,10 +1,10 @@
-import app from "../../";
+import * as languages from "../../lib/i18n/languages";
 
 export const countryCode = {
   invalid: lang => ({
     statusCode: 422,
     code: "1",
-    message: app.i18n.languages[lang]("InvalidCode")
+    message: languages[lang].errors.InvalidCode
   })
 };
 
@@ -12,12 +12,12 @@ export const phone = {
   invalid: lang => ({
     statusCode: 422,
     code: "2",
-    message: app.i18n.languages[lang]("InvalidNumber")
+    message: languages[lang].errors.InvalidNumber
   }),
   inUse: lang => ({
     statusCode: 422,
     code: "3",
-    message: app.i18n.languages[lang]("NumberInUse")
+    message: languages[lang].errors.NumberInUse
   })
 };
 
@@ -25,12 +25,12 @@ export const code = {
   invalid: lang => ({
     statusCode: 422,
     code: "4",
-    message: app.i18n.languages[lang]("InvalidCode")
+    message: languages[lang].errors.InvalidCode
   }),
   wrong: lang => ({
     statusCode: 422,
     code: "5",
-    message: app.i18n.languages[lang]("WrongCode")
+    message: languages[lang].errors.WrongCode
   })
 };
 
@@ -38,12 +38,12 @@ export const cpf = {
   invalid: lang => ({
     statusCode: 422,
     code: "6",
-    message: app.i18n.languages[lang]("InvalidFPIN")
+    message: languages[lang].errors.InvalidFPIN
   }),
   inUse: lang => ({
     statusCode: 422,
     code: "7",
-    message: app.i18n.languages[lang]("InUseFPIN")
+    message: languages[lang].errors.InUseFPIN
   })
 };
 
@@ -51,7 +51,7 @@ export const birth = {
   invalid: lang => ({
     statusCode: 422,
     code: "8",
-    message: app.i18n.languages[lang]("InvalidBirth")
+    message: languages[lang].errors.InvalidBirth
   })
 };
 
@@ -59,7 +59,7 @@ export const password = {
   invalid: lang => ({
     statusCode: 422,
     code: "9",
-    message: app.i18n.languages[lang]("InvalidPassword")
+    message: languages[lang].errors.InvalidPassword
   })
 };
 
@@ -67,12 +67,12 @@ export const username = {
   invalid: lang => ({
     statusCode: 422,
     code: "10",
-    message: app.i18n.languages[lang]("InvalidUsername")
+    message: languages[lang].errors.InvalidUsername
   }),
   inUse: lang => ({
     statusCode: 422,
     code: "11",
-    message: app.i18n.languages[lang]("InUseUsername")
+    message: languages[lang].errors.InUseUsername
   })
 };
 
@@ -80,7 +80,7 @@ export const firstName = {
   invalid: lang => ({
     statusCode: 422,
     code: "12",
-    message: app.i18n.languages[lang]("InvalidFirstName")
+    message: languages[lang].errors.InvalidFirstName
   })
 };
 
@@ -88,6 +88,6 @@ export const lastName = {
   invalid: lang => ({
     statusCode: 422,
     code: "13",
-    message: app.i18n.languages[lang]("InvalidLastName")
+    message: languages[lang].errors.InvalidLastName
   })
 };

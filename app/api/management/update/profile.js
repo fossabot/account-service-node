@@ -7,7 +7,7 @@ const validations = {
 };
 
 export default async function updateProfile(ctx, app) {
-  await app.validation.validate(ctx.body, validations);
+  await app.validation.validate(ctx.body, validations, ctx.language);
 
   const data = {};
 

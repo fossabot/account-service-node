@@ -3,16 +3,18 @@ import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 import { user, password } from "./errors";
 import { id, pw } from "./validations";
 
+const validations = { id, pw };
+
 export default async function credential(ctx, app) {
-  await app.validation.validate(ctx.body, { id, pw });
+  await app.validation.validate(ctx.body, validations, ctx.language);
 
   const userQuery = await app.models.users.get(ctx.body.id);
   if (!userQuery) {
-    throw app.validation.error(user.notFound);
+    throw app.validation.error(user.notFound(ctx.language));
   }
 
   if (!(await compare(ctx.body.pw, userQuery.pw))) {
-    throw app.validation.error(password.wrong);
+    throw app.validation.error(password.wrong(ctx.language));
   }
 
   const secondFactor = userQuery.authSecondFactor;

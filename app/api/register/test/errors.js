@@ -3,7 +3,7 @@ import * as error from "../errors";
 
 export const invalidCountryCode = {
   ...errorsBases[422],
-  ...error.countryCode.invalid("end")
+  ...error.countryCode.invalid("en")
 };
 
 export const invalidPhone = {

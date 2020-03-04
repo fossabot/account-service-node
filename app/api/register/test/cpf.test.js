@@ -33,14 +33,14 @@ export default () => {
 
       result(
         await request("post", url, {
-          json
+          json: { ...json, birth: "06/13/1994", cpf: validCPF }
         }),
         { "4xx": invalidCode }
       );
 
       result(
         await request("post", url, {
-          json: { ...json, code: "00000" }
+          json: { ...json, birth: "06/13/1994", cpf: validCPF, code: "00000" }
         }),
         { "4xx": wrongCode }
       );

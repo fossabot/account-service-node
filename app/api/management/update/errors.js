@@ -1,65 +1,103 @@
+import * as languages from "../../../lib/i18n/languages";
+
 export const names = {
-  firtName: {
-    invalid: { statusCode: 422, code: "1", message: "Invalid first name" }
+  firstName: {
+    invalid: lang => ({
+      statusCode: 422,
+      code: "1",
+      message: languages[lang].errors.InvalidFirstName
+    })
   },
   lastName: {
-    invalid: { statusCode: 422, code: "2", message: "Invalid last name" }
+    invalid: lang => ({
+      statusCode: 422,
+      code: "2",
+      message: languages[lang].errors.InvalidLastName
+    })
   }
 };
 
 export const password = {
-  invalid: { statusCode: 422, code: "1", message: "Invalid password" },
-  wrong: { statusCode: 422, code: "2", message: "Wrong password" }
+  invalid: lang => ({
+    statusCode: 422,
+    code: "1",
+    message: languages[lang].errors.InvalidPassword
+  }),
+  wrong: lang => ({
+    statusCode: 422,
+    code: "2",
+    message: languages[lang].errors.WrongPassword
+  })
 };
 
 export const auth = {
-  invalid: {
+  invalid: lang => ({
     statusCode: 422,
     code: "1",
-    message: "Must be an email or mobile phone number"
-  },
-  notOwn: {
+    message: languages[lang].errors.InvalidContact
+  }),
+  notOwn: lang => ({
     statusCode: 422,
     code: "2",
-    message: "Not owner of this contact"
-  }
+    message: languages[lang].errors.NotContactOwner
+  })
 };
 
 export const contact = {
-  invalid: { statusCode: 422, code: "1", message: "Undefined action" },
+  invalid: lang => ({
+    statusCode: 422,
+    code: "1",
+    message: languages[lang].errors.UndefinedAction
+  }),
   code: {
-    invalid: { statusCode: 422, code: "2", message: "Invalid code" },
-    wrong: { statusCode: 422, code: "3", message: "Wrong code" }
+    invalid: lang => ({
+      statusCode: 422,
+      code: "2",
+      message: languages[lang].errors.InvalidCode
+    }),
+    wrong: lang => ({
+      statusCode: 422,
+      code: "3",
+      message: languages[lang].errors.WrongCode
+    })
   },
   item: {
-    invalid: { statusCode: 422, code: "4", message: "Invalid contact" },
+    invalid: lang => ({
+      statusCode: 422,
+      code: "4",
+      message: languages[lang].errors.InvalidContact
+    }),
     add: {
-      inUse: { statusCode: 422, code: "5", message: "In use" }
+      inUse: lang => ({
+        statusCode: 422,
+        code: "5",
+        message: languages[lang].errors.ContactInUse
+      })
     },
     remove: {
-      single: {
+      single: lang => ({
         statusCode: 422,
         code: "6",
-        message: "Can't remove the only contact method"
-      },
-      secondFactor: {
+        message: languages[lang].errors.RemoveTheOnlyContact
+      }),
+      secondFactor: lang => ({
         statusCode: 422,
         code: "7",
-        message: "Not allowed remove second factor authentication"
-      }
+        message: languages[lang].errors.RemoveSecondFactor
+      })
     }
   }
 };
 
 export const photo = {
-  invalid: {
+  invalid: lang => ({
     statusCode: 422,
-    message: "Invalid format",
-    code: "1"
-  },
-  limitSize: {
+    code: "1",
+    message: languages[lang].errors.InvalidImageFormat
+  }),
+  limitSize: lang => ({
     statusCode: 422,
-    message: "File size limit exceeded",
-    code: "2"
-  }
+    code: "2",
+    message: languages[lang].errors.ImageSizeLimitExceeded
+  })
 };

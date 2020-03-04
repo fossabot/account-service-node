@@ -1,19 +1,16 @@
-import detectLang from "accept-language-parser";
-import pt from "./locales/pt.json";
-import en from "./locales/en.json";
+import { parse } from "accept-language-parser";
+import { pt, en } from "./languages";
 
 export default function setupI18n(app) {
   const languages = { en, pt };
 
   app.use(ctx => {
-    let [{ code = "en" } = {}] = detectLang(ctx.headers["accept-language"]);
+    let [{ code = "en" } = {}] = parse(ctx.headers["accept-language"]);
 
     code = code === "*" ? "pt" : code;
 
-    ctx.i18n = {
-      language: code,
-      message: id => languages[code][id]
-    };
+    ctx.language = code;
+    ctx.message = id => languages[code][id];
   });
 
   return { languages };

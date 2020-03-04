@@ -3,28 +3,28 @@ import app from "../../../index";
 import * as errors from "./errors";
 
 export function name(error) {
-  return value => {
+  return (value, lang) => {
     if (!app.utils.regex.name.test(value)) {
-      throw app.validation.error(error);
+      throw app.validation.error(error(lang));
     }
   };
 }
 
-export function password(value) {
+export function password(value, lang) {
   if (!value || value.length < 6) {
-    throw app.validation.error(errors.password.invalid);
+    throw app.validation.error(errors.password.invalid(lang));
   }
 }
 
 export const contact = {
-  code(value) {
+  code(value, lang) {
     if (typeof value !== "undefined" && value.length !== 5) {
-      throw app.validation.error(errors.contact.code.invalid);
+      throw app.validation.error(errors.contact.code.invalid(lang));
     }
   },
-  item(value) {
+  item(value, lang) {
     if (value && !app.utils.regex.phone.test(value) && !isValidEmail(value)) {
-      throw app.validation.error(errors.contact.item.invalid);
+      throw app.validation.error(errors.contact.item.invalid(lang));
     }
   }
 };

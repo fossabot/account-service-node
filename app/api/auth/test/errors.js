@@ -6,35 +6,35 @@ const e422 = errorsBases[422];
 export const identification = {
   invalid: {
     ...e422,
-    ...errors.identification.invalid
+    ...errors.identification.invalid("en")
   }
 };
 
 export const user = {
   invalid: {
     ...e422,
-    ...errors.user.notFound
+    ...errors.user.notFound("en")
   }
 };
 
 export const password = {
   invalid: {
     ...e422,
-    ...errors.password.invalid
+    ...errors.password.invalid("en")
   },
   wrong: {
     ...e422,
-    ...errors.password.wrong
+    ...errors.password.wrong("en")
   }
 };
 
 export const code = {
   invalid: {
     ...e422,
-    ...errors.code.invalid
+    ...errors.code.invalid("en")
   },
   wrong: {
     ...e422,
-    ...errors.code.wrong
+    ...errors.code.wrong("en")
   }
 };

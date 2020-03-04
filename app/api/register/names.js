@@ -7,7 +7,7 @@ const validations = {
 };
 
 export default async function names(ctx, app) {
-  await app.validation.validate(ctx.body, validations, ctx.i18n.language);
+  await app.validation.validate(ctx.body, validations, ctx.language);
 
   return { code: 200 };
 }

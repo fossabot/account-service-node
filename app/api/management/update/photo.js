@@ -40,7 +40,7 @@ export default function makeUpdatePhotoController(app) {
         const { mime } = await FileType.fromStream(uploadStream);
 
         if (validMimes.indexOf(mime) === -1) {
-          return uploadStream.destroy(error(photo.invalid));
+          return uploadStream.destroy(error(photo.invalid(ctx.language)));
         }
 
         let fileBytes = 0;
@@ -48,7 +48,7 @@ export default function makeUpdatePhotoController(app) {
           fileBytes += chunk.length;
           // 1mb size limit
           if (fileBytes > 1e6) {
-            uploadStream.destroy(error(photo.limitSize));
+            uploadStream.destroy(error(photo.limitSize(ctx.language)));
           }
         });
 

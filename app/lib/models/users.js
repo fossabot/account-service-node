@@ -1,4 +1,4 @@
-import app from "../../index";
+import utils from "../utils";
 import { hash } from "bcrypt";
 import { isValidEmail, isValidCPF } from "@brazilian-utils/brazilian-utils";
 
@@ -22,8 +22,8 @@ export default class UsersModel {
   }
 
   async get(id) {
-    if (app.utils.regex.phone.test(id)) return this.getByPhone(id);
-    if (app.utils.regex.username.test(id)) return this.getByUsername(id);
+    if (utils.regex.phone.test(id)) return this.getByPhone(id);
+    if (utils.regex.username.test(id)) return this.getByUsername(id);
     if (isValidEmail(id)) return this.getByEmail(id);
     if (isValidCPF(id)) return this.getByCPF(id);
 

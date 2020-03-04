@@ -22,9 +22,9 @@ export default function makeContactController(app) {
      * Fields validation
      */
     if (!ctx.body.add && !ctx.body.remove) {
-      throw error(contactErr.invalid);
+      throw error(contactErr.invalid(ctx.language));
     }
-    await validate(ctx.body, validationFields);
+    await validate(ctx.body, validationFields, ctx.language);
 
     /**
      * Remove request
@@ -35,14 +35,14 @@ export default function makeContactController(app) {
       const type = phoneRegEx.test(ctx.body.remove) ? "phones" : "emails";
 
       if (allContacts.length === 1) {
-        throw error(contactErr.item.remove.single);
+        throw error(contactErr.item.remove.single(ctx.language));
       }
 
       if (ctx.user.data.authSecondFactor) {
         const compare =
           type === "phones" ? `+${ctx.user.data.ncode}${item}` : item;
         if (compare === ctx.user.data.authSecondFactor) {
-          throw error(contactErr.item.remove.secondFactor);
+          throw error(contactErr.item.remove.secondFactor(ctx.language));
         }
       }
 
@@ -59,7 +59,7 @@ export default function makeContactController(app) {
      */
     if (ctx.body.add && !ctx.body.code) {
       if (await data.users.get(ctx.body.add)) {
-        throw error(contactErr.item.add.inUse);
+        throw error(contactErr.item.add.inUse(ctx.language));
       }
 
       const type = phoneRegEx.test(ctx.body.add) ? "phones" : "emails";
@@ -81,7 +81,7 @@ export default function makeContactController(app) {
     if (ctx.body.code) {
       const cacheKey = `${ctx.user.data.id}${ctx.body.add}`;
       if (!(await verification.check(cacheKey, ctx.body.code))) {
-        throw error(contactErr.code.wrong);
+        throw error(contactErr.code.wrong(ctx.language));
       }
 
       const type = phoneRegEx.test(ctx.body.add) ? "phones" : "emails";
