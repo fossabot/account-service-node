@@ -1,126 +1,98 @@
-// import { isValidEmail } from "@brazilian-utils/brazilian-utils";
-// import app from "../../../";
 import { contact as contactValidation } from "./validations";
 import { contact as contactErr } from "./errors";
 
-export default async function contact(ctx, app) {
-  const { body, user, userId } = ctx;
-  const { cache, models, createError, verification, utils } = app;
-  /**
-   * Fields validation
-   */
-  if (!body.add && !body.remove) {
-    throw createError(
-      contactErr.invalid.statusCode,
-      contactErr.invalid.message,
-      { code: contactErr.invalid.code }
-    );
-  }
-  await app.validation.validate(body, {
-    code: contactValidation.code,
-    add: contactValidation.item,
-    remove: contactValidation.item
-  });
+const validationFields = {
+  code: contactValidation.code,
+  add: contactValidation.item,
+  remove: contactValidation.item
+};
 
-  /**
-   * Remove request
-   */
-  if (ctx.body.remove) {
-    const item = body.remove;
-    const allContacts = [...user.data.emails, ...user.data.phones];
-    const type = utils.regex.phone.test(body.remove) ? "phones" : "emails";
+export default function makeContactController(app) {
+  const {
+    data,
+    validation: { error, validate },
+    verification,
+    utils: {
+      regex: { phone: phoneRegEx }
+    }
+  } = app;
 
-    if (allContacts.length === 1)
-      throw createError(
-        contactErr.item.remove.single.statusCode,
-        contactErr.item.remove.single.message,
-        {
-          code: contactErr.item.remove.single.code
+  return async function contact(ctx) {
+    /**
+     * Fields validation
+     */
+    if (!ctx.body.add && !ctx.body.remove) {
+      throw error(contactErr.invalid);
+    }
+    await validate(ctx.body, validationFields);
+
+    /**
+     * Remove request
+     */
+    if (ctx.body.remove) {
+      const item = ctx.body.remove;
+      const allContacts = [...ctx.user.data.emails, ...ctx.user.data.phones];
+      const type = phoneRegEx.test(ctx.body.remove) ? "phones" : "emails";
+
+      if (allContacts.length === 1) {
+        throw error(contactErr.item.remove.single);
+      }
+
+      if (ctx.user.data.authSecondFactor) {
+        const compare =
+          type === "phones" ? `+${ctx.user.data.ncode}${item}` : item;
+        if (compare === ctx.user.data.authSecondFactor) {
+          throw error(contactErr.item.remove.secondFactor);
         }
-      );
+      }
 
-    if (user.data.authSecondFactor) {
-      const compare = type === "phones" ? `+${user.data.ncode}${item}` : item;
-      if (compare === user.data.authSecondFactor)
-        throw createError(
-          contactErr.item.remove.secondFactor.statusCode,
-          contactErr.item.remove.secondFactor.message,
-          {
-            code: contactErr.item.remove.secondFactor.code
-          }
-        );
+      const current = [...ctx.user.data[type]];
+      const index = current.indexOf(ctx.body.remove);
+
+      current.splice(index, 1);
+
+      await ctx.user.update({ [type]: current });
     }
 
-    const current = [...user.data[type]];
-    const index = current.indexOf(body.remove);
+    /**
+     * Addition request
+     */
+    if (ctx.body.add && !ctx.body.code) {
+      if (await data.users.get(ctx.body.add)) {
+        throw error(contactErr.item.add.inUse);
+      }
 
-    current.splice(index, 1);
+      const type = phoneRegEx.test(ctx.body.add) ? "phones" : "emails";
+      const to =
+        type === "phones"
+          ? `+${ctx.user.data.ncode}${ctx.body.add}`
+          : ctx.body.add;
 
-    await user.update({ [type]: current });
-  }
-
-  /**
-   * Addition request
-   */
-  if (body.add && !body.code) {
-    if (await models.users.get(body.add)) {
-      throw createError(
-        contactErr.item.add.inUse.statusCode,
-        contactErr.item.add.inUse.message,
-        { code: contactErr.item.add.inUse.code }
+      await verification.create(
+        `${ctx.user.data.id}${ctx.body.add}`,
+        to,
+        ctx.body.renew
       );
     }
 
-    const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
-    const to = type === "phones" ? `+${user.data.ncode}${body.add}` : body.add;
+    /**
+     * Confirm addition
+     */
+    if (ctx.body.code) {
+      const cacheKey = `${ctx.user.data.id}${ctx.body.add}`;
+      if (!(await verification.check(cacheKey, ctx.body.code))) {
+        throw error(contactErr.code.wrong);
+      }
 
-    await verification.create(`${userId}${body.add}`, to, body.renew);
-  }
+      const type = phoneRegEx.test(ctx.body.add) ? "phones" : "emails";
+      const current = [...ctx.user.data[type]];
 
-  /**
-   * Confirm addition
-   */
-  if (body.code) {
-    const cacheKey = `${userId}${body.add}`;
-    if (!(await verification.check(cacheKey, body.code)))
-      throw createError(
-        contactErr.code.wrong.statusCode,
-        contactErr.code.wrong.message,
-        { code: contactErr.code.wrong.code }
-      );
+      current.push(ctx.body.add);
 
-    const type = utils.regex.phone.test(body.add) ? "phones" : "emails";
-    const current = [...user.data[type]];
+      await ctx.user.update({ [type]: current });
+      await verification.remove(cacheKey);
+    }
 
-    current.push(body.add);
-
-    await user.update({ [type]: current });
-    await cache.del(cacheKey);
-  }
-
-  return true;
+    return true;
+  };
 }
-/**
- * Validation
- */
-/*
-function validate({ add, remove, code }, app) {
-  if (typeof code !== "undefined" && code.length !== 5)
-    throw app.createError(400, "invalid code");
-  if (!add && !remove) throw app.createError(400, "undefined action");
-
-  if (add && isInvalid(add)) {
-    return false;
-  }
-
-  if (remove && isInvalid(remove)) {
-    return false;
-  }
-
-  return true;
-}
-
-function isInvalid(field) {
-  return !app.utils.regex.phone.test(field) && !isValidEmail(field);
-}
-*/

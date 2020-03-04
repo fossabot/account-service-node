@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "InvalidCountryCode": "Invalid country code",
+    "InvalidNumber": "Invalid number",
+    "NumberInUse": "Number in use",
+    "InvalidCode": "Invalid code",
+    "WrongCode": "Wrong code",
+    "InvalidFPIN": "Invalid ITIN",
+    "InUseFPIN": "ITIN already registered",
+    "InvalidBirth": "Invalid birth",
+    "InvalidPassword": "Invalid password",
+    "WrongPassword": "Wrong password",
+    "InvalidUsername": "Invalid username",
+    "InUseUsername": "Username already registered",
+    "InvalidFirstName": "Invalid first name",
+    "InvalidLastName": "Invalid last name"
+  }
+}

@@ -1,10 +1,13 @@
 import { name } from "./validations";
+import { names } from "./errors";
+
+const validations = {
+  fn: name(names.firstName.invalid),
+  ln: name(names.lastName.invalid)
+};
 
 export default async function updateProfile(ctx, app) {
-  await app.validation.validate(ctx.body, {
-    fn: name,
-    ln: name
-  });
+  await app.validation.validate(ctx.body, validations);
 
   const data = {};
 

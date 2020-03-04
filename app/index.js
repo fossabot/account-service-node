@@ -3,28 +3,8 @@ import Univ from "@univ/setup";
 import Fastify from "@univ/fastify";
 import Express from "@univ/express";
 
-import Redis from "ioredis";
-
-import models from "./models";
 import lib from "./lib";
 import api from "./api";
-
-const redis = new Redis({
-  host: process.env.REDISHOST || "127.0.0.1",
-  port: process.env.REDISPORT || 6379,
-  keyPrefix: "accountService:",
-  showFriendlyErrorStack: true
-});
-
-redis.on("connect", () => {
-  (process.env.NODE_ENV === "production" || process.env.DEBUG) &&
-    console.info("redis connected");
-});
-
-redis.on("end", err => {
-  console.error(err);
-  process.exit(-1);
-});
 
 const httpFrameworks = {
   fastify: Fastify,
@@ -33,6 +13,13 @@ const httpFrameworks = {
 
 const app = new Univ(httpFrameworks[process.env.HTTP_FRAMEWORK], {
   port: process.env.PORT || 3000
+  /*
+  cors: {
+    origin: process.env.ORIGINS || "*",
+    methods: ["get", "put", "post", "delete", "options"],
+    headers: ["content-type", "accept-langauge"]
+  }
+  */
 });
 
 app.attach("isProduction", process.env.NODE_ENV === "production");
@@ -42,7 +29,8 @@ app.use(ctx => {
   ctx.setHeaders({
     "Access-Control-Allow-Origin": process.env.ORIGINS || "*",
     "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization, Content-Type"
+    "Access-Control-Allow-Headers":
+      "Authorization, Content-Type, Accept-Language"
   });
 
   if (ctx.method === "OPTIONS") {
@@ -50,16 +38,16 @@ app.use(ctx => {
   }
 });
 
-app.setErrorTracker((err, { ip, ips, headers, params }) => {
+app.setErrorTracker(err => {
   if (!(process.env.NODE_ENV === "production" || process.env.DEBUG)) return;
 
-  return "statusCode" in err && !err.dangerous
-    ? console.log(err)
-    : console.error(err, "context", { ip, ips, headers, params });
+  if (err.statusCode === 422) {
+    return console.log(err);
+  }
+
+  console.error(err);
 });
 
-app.attach("redis", redis);
-app.attach("models", models);
 lib(app);
 api(app);
 

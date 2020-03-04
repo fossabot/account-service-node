@@ -7,7 +7,7 @@ export default async function identifyUser(ctx, app) {
   const userQuery = await app.models.users.get(ctx.params.id);
 
   if (!userQuery) {
-    throw app.createError(user.notFound.code, user.notFound.message);
+    throw app.validation.error(user.notFound);
   }
 
   return {

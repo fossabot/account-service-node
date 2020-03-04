@@ -13,7 +13,6 @@ export default function storage(app) {
             keyFilename: "gcloud-storage-dev-key.json"
           }
         );
-  console.log("@", process.env.NODE_ENV, storage);
   return {
     profilePicture: {
       bucket: storage.bucket(PROFILE_BUCKET),

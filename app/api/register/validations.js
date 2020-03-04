@@ -1,149 +1,71 @@
 import app from "../../index";
-import * as error from "./errors";
+import * as errors from "./errors";
 import { isValidCPF } from "@brazilian-utils/brazilian-utils";
 
-export async function ncode(value) {
+export function ncode(value, lang) {
   if (!value || value.length !== 2 || isNaN(value)) {
-    throw app.createError(
-      error.countryCode.invalid.statusCode,
-      error.countryCode.invalid.message,
-      {
-        code: error.countryCode.invalid.code
-      }
-    );
+    throw app.validation.error(errors.countryCode.invalid(lang));
   }
 }
 
-export async function phone(value) {
+export async function phone(value, lang) {
   if (!value || !app.utils.regex.phone.test(value)) {
-    throw app.createError(
-      error.phone.invalid.statusCode,
-      error.phone.invalid.message,
-      {
-        code: error.phone.invalid.code
-      }
-    );
+    throw app.validation.error(errors.phone.invalid(lang));
   }
 
   const user = await app.models.users.getByPhone(value);
 
   if (user) {
-    throw app.createError(
-      error.phone.inUse.statusCode,
-      error.phone.inUse.message,
-      {
-        code: error.phone.inUse.code
-      }
-    );
+    throw app.validation.error(errors.phone.inUse(lang));
   }
 }
 
-export async function code(code, { phone }) {
+export async function code(code, lang) {
   if (!code || code.length !== 5) {
-    throw app.createError(
-      error.code.invalid.statusCode,
-      error.code.invalid.message,
-      {
-        code: error.code.invalid.code
-      }
-    );
-  }
-
-  if (!(await app.verification.check(`reg:${phone}`, code))) {
-    throw app.createError(
-      error.code.wrong.statusCode,
-      error.code.wrong.message,
-      {
-        code: error.code.wrong.code
-      }
-    );
+    throw app.validation.error(errors.code.invalid(lang));
   }
 }
 
-export async function cpf(value) {
+export async function cpf(value, lang) {
   if (!isValidCPF(value)) {
-    throw app.createError(
-      error.cpf.invalid.statusCode,
-      error.cpf.invalid.message,
-      {
-        code: error.cpf.invalid.code
-      }
-    );
+    throw app.validation.error(errors.cpf.invalid(lang));
   }
 
   if (await app.models.users.getByCPF(value)) {
-    throw app.createError(error.cpf.inUse.statusCode, error.cpf.inUse.message, {
-      code: error.cpf.inUse.code
-    });
+    throw app.validation.error(errors.cpf.inUse(lang));
   }
 }
 
-export async function birth(value) {
+export async function birth(value, lang) {
   if (!value || !/[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}/.test(value)) {
-    throw app.createError(
-      error.birth.invalid.statusCode,
-      error.birth.invalid.message,
-      {
-        code: error.birth.invalid.code
-      }
-    );
+    throw app.validation.error(errors.birth.invalid(lang));
   }
 }
 
-export async function pw(value) {
+export async function pw(value, lang) {
   if (!value || value.length <= 5) {
-    throw app.createError(
-      error.password.invalid.statusCode,
-      error.password.invalid.message,
-      {
-        code: error.password.invalid.code
-      }
-    );
+    throw app.validation.error(errors.password.invalid(lang));
   }
 }
 
-export async function username(value) {
+export async function username(value, lang) {
   if (!value || !app.utils.regex.username.test(value)) {
-    throw app.createError(
-      error.username.invalid.statusCode,
-      error.username.invalid.message,
-      {
-        code: error.username.invalid.code
-      }
-    );
+    throw app.validation.error(errors.username.invalid(lang));
   }
 
   if (await app.models.users.getByUsername(value)) {
-    throw app.createError(
-      error.username.inUse.statusCode,
-      error.username.inUse.message,
-      {
-        code: error.username.inUse.code
-      }
-    );
+    throw app.validation.error(errors.username.inUse(lang));
   }
 }
 
-export async function fn(value) {
+export async function fn(value, lang) {
   if (!value || !app.utils.regex.name.test(value)) {
-    throw app.createError(
-      error.firstName.invalid.statusCode,
-      error.firstName.invalid.message,
-      {
-        code: error.firstName.invalid.code
-      }
-    );
+    throw app.validation.error(errors.firstName.invalid(lang));
   }
 }
 
-export async function ln(value) {
+export async function ln(value, lang) {
   if (!value || !app.utils.regex.name.test(value)) {
-    throw app.createError(
-      error.lastName.invalid.statusCode,
-      error.lastName.invalid.message,
-      {
-        code: error.lastName.invalid.code
-      }
-    );
+    throw app.validation.error(errors.lastName.invalid(lang));
   }
 }

@@ -1,16 +1,27 @@
 import * as validations from "./validations";
+import * as errors from "./errors";
 
 export default async function record(ctx, app) {
-  await app.validation.validate(ctx.body, validations);
+  await app.validation.validate(ctx.body, validations, ctx.i18n.language);
+
+  if (!(await app.verification.check(`reg:${ctx.body.phone}`, ctx.body.code))) {
+    throw app.validation.error(errors.code.wrong(ctx.i18n.language));
+  }
 
   const { username, fn, ln, ncode, phone, cpf, birth, pw, terms } = ctx.body;
 
   const codeData = await app.verification.get(`reg:${phone}`);
 
   if (codeData.cpf !== cpf) {
-    throw app.createError(400, "invalid cpf", {
-      dangerous: "Registry finish, changed data"
-    });
+    console.error(
+      "Registry finish, changed data",
+      "phone:",
+      phone,
+      codeData.cpf,
+      " > ",
+      cpf
+    );
+    throw app.validation.error(errors.cpf.invalid);
   }
 
   if (!(await trustCPF(cpf, birth))) {

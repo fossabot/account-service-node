@@ -8,10 +8,9 @@ export default async function updatePassword(ctx, app) {
     want: password
   });
 
-  if (!(await compare(ctx.body.current, ctx.user.data.pw)))
-    throw app.createError(pwError.wrong.statusCode, pwError.wrong.message, {
-      code: pwError.wrong.code
-    });
+  if (!(await compare(ctx.body.current, ctx.user.data.pw))) {
+    throw app.validation.error(pwError.wrong);
+  }
 
   await ctx.user.update({ pw: await hash(ctx.body.want, 10) });
 

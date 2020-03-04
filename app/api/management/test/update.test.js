@@ -257,18 +257,19 @@ export default () => {
           ).to.be.eq(200);
         });
 
-        it(`should response addition code wrong`, async () => {
+        it(`should response verification code invalid`, async () => {
           result(
             await request("put", "/account/contact", {
               auth: true,
               json: {
                 add,
-                code: ""
+                code: "000000"
               }
             }),
             { "4xx": errors.contact.code.invalid }
           );
-
+        });
+        it(`should response verification code wrong`, async () => {
           result(
             await request("put", "/account/contact", {
               auth: true,
@@ -347,6 +348,16 @@ export default () => {
           json: {
             remove: ""
           }
+        }),
+        {
+          "4xx": errors.contact.undefined
+        }
+      );
+
+      result(
+        await request("put", "/account/contact", {
+          auth: true,
+          json: {}
         }),
         {
           "4xx": errors.contact.undefined

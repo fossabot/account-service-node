@@ -7,9 +7,7 @@ export default async function codeController(ctx, app) {
   const { id: uid, code: sentCode } = ctx.body;
 
   if (!(await app.verification.check(uid, sentCode))) {
-    throw app.createError(code.wrong.statusCode, code.wrong.message, {
-      code: code.wrong.code
-    });
+    throw app.validation.error(code.wrong);
   }
 
   const { token: content } = await app.sessions.create(uid, ctx);

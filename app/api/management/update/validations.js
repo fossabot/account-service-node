@@ -1,48 +1,30 @@
 import { isValidEmail } from "@brazilian-utils/brazilian-utils";
 import app from "../../../index";
-import { names, password as pwError, contact as contactError } from "./errors";
+import * as errors from "./errors";
 
-export function name(value) {
-  if (!app.utils.regex.name.test(value)) {
-    throw app.createError(names.invalid.statusCode, names.invalid.message, {
-      code: names.invalid.code
-    });
-  }
+export function name(error) {
+  return value => {
+    if (!app.utils.regex.name.test(value)) {
+      throw app.validation.error(error);
+    }
+  };
 }
 
 export function password(value) {
   if (!value || value.length < 6) {
-    throw app.createError(pwError.invalid.statusCode, pwError.invalid.message, {
-      code: pwError.invalid.code
-    });
+    throw app.validation.error(errors.password.invalid);
   }
 }
 
 export const contact = {
   code(value) {
     if (typeof value !== "undefined" && value.length !== 5) {
-      throw app.createError(
-        contactError.code.invalid.statusCode,
-        contactError.code.invalid.message,
-        {
-          code: contactError.code.invalid.code
-        }
-      );
+      throw app.validation.error(errors.contact.code.invalid);
     }
   },
   item(value) {
-    if (value && isInvalid(value)) {
-      throw app.createError(
-        contactError.item.invalid.statusCode,
-        contactError.item.invalid.message,
-        {
-          code: contactError.item.invalid.code
-        }
-      );
+    if (value && !app.utils.regex.phone.test(value) && !isValidEmail(value)) {
+      throw app.validation.error(errors.contact.item.invalid);
     }
   }
 };
-
-function isInvalid(field) {
-  return !app.utils.regex.phone.test(field) && !isValidEmail(field);
-}

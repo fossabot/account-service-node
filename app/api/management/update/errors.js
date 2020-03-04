@@ -1,5 +1,10 @@
 export const names = {
-  invalid: { statusCode: 422, code: "1", message: "Invalid names" }
+  firtName: {
+    invalid: { statusCode: 422, code: "1", message: "Invalid first name" }
+  },
+  lastName: {
+    invalid: { statusCode: 422, code: "2", message: "Invalid last name" }
+  }
 };
 
 export const password = {

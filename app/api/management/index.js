@@ -12,7 +12,7 @@ import authMode from "./update/auth-mode";
 import photo from "./update/photo";
 import contact from "./update/contact";
 
-export default function management({ use, get, put }) {
+export default function management({ use, get, put }, app) {
   use(createAuthMiddleware());
   use(userMiddleware);
 
@@ -21,7 +21,7 @@ export default function management({ use, get, put }) {
   put("/profile", profile);
   put("/password", password);
   put("/auth", authMode);
-  put("/photo", photo);
-  put("/contact", contact);
+  put("/photo", photo(app));
+  put("/contact", contact(app));
   // get("/history/:page", history)
 }

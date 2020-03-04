@@ -8,15 +8,11 @@ export default async function credential(ctx, app) {
 
   const userQuery = await app.models.users.get(ctx.body.id);
   if (!userQuery) {
-    throw app.createError(user.notFound.statusCode, user.notFound.message, {
-      code: user.notFound.code
-    });
+    throw app.validation.error(user.notFound);
   }
 
   if (!(await compare(ctx.body.pw, userQuery.pw))) {
-    throw app.createError(password.wrong.statusCode, password.wrong.message, {
-      code: password.wrong.code
-    });
+    throw app.validation.error(password.wrong);
   }
 
   const secondFactor = userQuery.authSecondFactor;

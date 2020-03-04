@@ -31,6 +31,10 @@ export const auth = {
 };
 
 export const contact = {
+  invalid: {
+    ...err,
+    ...errors.contact.invalid
+  },
   code: {
     invalid: {
       ...err,
