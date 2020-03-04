@@ -10,7 +10,5 @@ export default async function codeController(ctx, app) {
     throw app.validation.error(errors.code.wrong(ctx.language));
   }
 
-  return {
-    code: 200
-  };
+  return true;
 }

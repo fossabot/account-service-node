@@ -21,7 +21,8 @@ export default {
     NotContactOwner: "Not owner of this contact",
     UndefinedAction: "Undefined action",
     RemoveTheOnlyContact: "Can't remove the only contact method",
-    RemoveSecondFactor: "Not allowed remove second factor authentication",
+    RemoveSecondFactor:
+      "It's not allowed to remove the second authentication factor",
     InvalidImageFormat: "Invalid image type",
     ImageSizeLimitExceeded: "Image size limit exceeded"
   }
